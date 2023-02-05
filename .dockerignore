@@ -1,0 +1,10 @@
+*Dockerfile*
+*.dockerignore*
+*docker-compose*
+.git
+*.gitignore
+*.gitattributes
+*.config
+*.vscode
+README.md
+wait-for-it.sh
