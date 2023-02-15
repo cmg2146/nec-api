@@ -9,4 +9,5 @@ RUN pip install --no-cache-dir --upgrade -r ./requirements.txt
 WORKDIR /app/src
 COPY ./src ./
 
+WORKDIR /app/src/app
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
