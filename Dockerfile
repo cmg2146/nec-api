@@ -1,5 +1,7 @@
 FROM python:3.11-slim
 
+ENV FASTAPI_ENV=production
+
 # install dependencies
 WORKDIR /app
 COPY ./requirements.txt ./requirements.txt
@@ -10,4 +12,5 @@ WORKDIR /app/src
 COPY ./src ./
 
 WORKDIR /app/src/app
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+ENTRYPOINT ["uvicorn", "main:app"]
+CMD ["--host", "0.0.0.0", "--port", "80"]
