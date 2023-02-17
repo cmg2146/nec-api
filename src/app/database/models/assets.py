@@ -6,10 +6,12 @@ from geoalchemy2 import Geometry
 
 from _base import BaseModel
 
+_ASSET_PROPERTY_NAME_LENGTH = 100
+
 class Asset(BaseModel):
     """Asset model
 
-    An asset is an item of interest which occupies a phyiscal point in space
+    An asset is an item of interest which occupies a physical point in space
     """
     __tablename__ = "asset"
 
@@ -49,7 +51,7 @@ class AssetPropertyName(BaseModel):
     """
     __tablename__ = "asset_property_name"
 
-    name = Column(String(length=100), nullable=False)
+    name = Column(String(length=_ASSET_PROPERTY_NAME_LENGTH), nullable=False)
     asset_type_id = Column(Integer, ForeignKey("asset_type.id"), nullable=False, index=True)
     #TODO: Figure out how to store allowed values (a dropdown)
     #allowed_values =
@@ -64,11 +66,14 @@ class AssetProperty(BaseModel):
     """
     __tablename__ = "asset_property"
 
+    name = Column(String(length=_ASSET_PROPERTY_NAME_LENGTH), nullable=False)
     value = Column(String, nullable=False)
-    # NOTE: By only using a foreign key to get the property name, rather than storing the name again here,
-    # an asset's properties can "change" when the property name changes. This may or may not be desired behavior.
     asset_property_name_id = Column(Integer, ForeignKey("asset_property_name.id"), nullable=False, index=True)
     asset_id = Column(Integer, ForeignKey("asset.id"), nullable=False, index=True)
+
+    # NOTE on why there is both a name field and foreign key to the name property: This allows flexibilty
+    # when updating property names - we can change names going forward without affecting existing assets,
+    # retroactively change existing assets, or both.
 
     asset_property_name = relationship("AssetPropertyName", back_populates="asset_properties")
     asset = relationship("Asset", back_populates="asset_properties")
