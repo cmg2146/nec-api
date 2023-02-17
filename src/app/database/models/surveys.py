@@ -4,7 +4,7 @@ from sqlalchemy import Column, String, DateTime, Integer, Boolean, ForeignKey, U
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 
-from models.base import BaseModel
+from _base import BaseModel
 
 class Site(BaseModel):
     """Site model

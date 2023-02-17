@@ -4,7 +4,7 @@ from sqlalchemy import Column, String, Integer, Double, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 
-from models.base import BaseModel
+from _base import BaseModel
 
 class Photo(BaseModel):
     """Photo model
