@@ -18,6 +18,8 @@ class Asset(BaseDbModel):
     name = Column(String(length=100), nullable=False)
     description = Column(String(length=255), nullable=True)
     coordinates = Column(Geometry(geometry_type='POINT', srid=4326), nullable=False)
+    """The latitude and longitude of the asset."""
+
     asset_type_id = Column(Integer, ForeignKey("asset_type.id"), nullable=False, index=True)
     floor_id = Column(Integer, ForeignKey("floor.id"), nullable=False, index=True)
 
@@ -36,7 +38,6 @@ class AssetType(BaseDbModel):
     name = Column(String(length=100), nullable=False)
     description = Column(String(length=255), nullable=True)
     category = Column(String(length=100), nullable=True)
-    # TODO: Constrain the icon size somewhere else
     icon = Column(LargeBinary, nullable=False)
 
     assets = relationship("Asset", back_populates="asset_type")
@@ -53,8 +54,6 @@ class AssetPropertyName(BaseDbModel):
 
     name = Column(String(length=_ASSET_PROPERTY_NAME_LENGTH), nullable=False)
     asset_type_id = Column(Integer, ForeignKey("asset_type.id"), nullable=False, index=True)
-    #TODO: Figure out how to store allowed values (a dropdown)
-    #allowed_values =
 
     asset_type = relationship("AssetType", back_populates="asset_property_names")
     asset_properties = relationship("AssetProperty", back_populates="asset_property_name")

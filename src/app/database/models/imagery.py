@@ -16,26 +16,53 @@ class Photo(BaseDbModel):
     name = Column(String(length=100), nullable=False)
     description = Column(String(length=255), nullable=True)
     coordinates = Column(Geometry(geometry_type='POINT', srid=4326), nullable=False)
-    # direction relative to true north the camera was facing (center of the image)
+    """The latitude and longitude of the photo."""
+
     heading = Column(Double, nullable=False, default=0.0)
-    # If None (the default), then the photo is a normal photo (not a pano). If False, the photo is a
-    # single file, spherical pano. If True, the pano is a 6 file cubic.
+    """Direction, relative to true north, of the center of the photo."""
+
     is_cubic_pano = Column(Boolean, nullable=True, default=None)
-    # If this is a cubic pano, then the filename should be a prefix or template.
-    # Filenames are nullable to allow for disconnected data collection, i.e. the images have not been pulled
-    # from the camera yet, but they have been placed on the map.
+    """Indicates the type of photo.
+
+    None (the default) - normal photo (not a 360 degree pano).
+
+    False - 360 degree, single file, spherical pano.
+
+    True - 360 degree, six file, cubic pano.
+    """
+
     original_filename = Column(String(length=255), nullable=True)
+    """Original or uploaded filename.
+
+    Column is nullable to allow for disconnected data collection, i.e. photos have not been pulled
+    from the camera yet, but they have been placed on the map.
+    """
+
     stored_filename = Column(String(length=255), nullable=True)
-    # a custom marker makes it easy to track the record with the actual image file for disconnected
-    # data collection
+    """Filename stored on disk.
+
+    The file name stored on disk will be different from the original/uploaded file name.
+
+    Column is nullable to allow for disconnected data collection, i.e. photos have not been pulled
+    from the camera yet, but they have been placed on the map.
+    """
+
     custom_marker = Column(String(length=100), nullable=True)
+    """Custom data to associate a photo record with the correct image file.
+
+    The custom marker is useful when the actual photos do not get uploaded until after data
+    has been collected. The marker allows the file to be tracked with the database record and
+    also allows photos to be bulk uploaded.
+    """
+
     floor_id = Column(Integer, ForeignKey("floor.id"), nullable=False, index=True)
 
     floor = relationship("Floor", back_populates="photos")
-    # The hotspots visible in this photo
     hotspots = relationship("Hotspot", back_populates="source_photo")
-    # The hotspots that have this photo as the destination photo
+    """The hotspots visible in this photo."""
+
     source_hotspots = relationship("Hotspots", back_populates="destination_photo")
+    """The hotspots that have this photo as the destination photo."""
 
 class Hotspot(BaseDbModel):
     """Hotspot model
@@ -52,16 +79,31 @@ class Hotspot(BaseDbModel):
     __tablename__ = "hotspot"
 
     source_photo_id = Column(Integer, ForeignKey("photo.id"), nullable=False, index=True)
-    asset_id = Column(Integer, ForeignKey("asset.id"), nullable=True, index=True)
-    destination_photo_id = Column(Integer, ForeignKey("photo.id"), nullable=True, index=True)
+    """The ID of the photo this hotspot is visible in."""
 
-    # the x and y coordinate specify the location of the hotspot in the source photo.
-    # The values will differ depending on the source photo type:
-    # For a pano, x and y are in the range [-pi, pi] with the origin at the center of the image.
-    # For a normal photo, x and y are in the range [0, 1] with the origin at the top left of the image.
-    # NOTE: if we had 3 dimensional data for all assets and photos, these values could be determined automatically
+    asset_id = Column(Integer, ForeignKey("asset.id"), nullable=True, index=True)
+    """The ID of the asset this hotspot references, if this is an asset hotspot."""
+
+    destination_photo_id = Column(Integer, ForeignKey("photo.id"), nullable=True, index=True)
+    """The ID of the photo this hotspot references, if this is a photo hotspot."""
+
+    # NOTE: if we had 3 dimensional data for all assets and photos (and image processing), hotspots could
+    # be located automatically.
     x_coord = Column(Double, nullable=False)
+    """Horizontal location of the hotspot in the photo.
+
+    For a pano, the value is in the range [-pi, pi] with the origin at the center of the image.
+
+    For a normal photo, the value is in the range [0, 1] with the origin at the top left of the image.
+    """
+
     y_coord = Column(Double, nullable=False)
+    """Vertical location of the hotspot in the photo.
+
+    For a pano, the value is in the range [-pi/2, pi/2] with the origin at the center of the image.
+
+    For a normal photo, the value is in the range [0, 1] with the origin at the top left of the image.
+    """
 
     source_photo = relationship("Photo", back_populates="hotspots")
     asset = relationship("Asset", back_populates="asset_hotspots")

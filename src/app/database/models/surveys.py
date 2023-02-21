@@ -14,8 +14,8 @@ class Site(BaseDbModel):
     __tablename__ = "site"
 
     name = Column(String(length=100), nullable=False)
-    # NOTE: A site will comprise a large geographic area - point coordinates are used to locate the site easily
     coordinates = Column(Geometry(geometry_type='POINT', srid=4326), nullable=False)
+    """The latitude and longitude of the site."""
 
     surveys = relationship("Survey", back_populates="site")
 
@@ -69,8 +69,9 @@ class Floor(BaseDbModel):
     __tablename__ = "floor"
 
     name = Column(String(length=100), nullable=False)
-    # By making both nullable, we leave it up to the users to decide if a floor should point
-    # to both the survey and sub-survey (if sub-surveys are in use).
+
+    # By making both survey and sub-survey nullable, we leave it up to the users to decide if
+    # a floor should point to both the survey and sub-survey (if sub-surveys are in use).
     survey_id = Column(Integer, ForeignKey("survey.id"), nullable=True, index=True)
     sub_survey_id = Column(Integer, ForeignKey("sub_survey.id"), nullable=True, index=True)
 
