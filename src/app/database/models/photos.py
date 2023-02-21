@@ -1,4 +1,4 @@
-"""Module containing imagery and related database models"""
+"""Module containing photo and related database models"""
 
 from sqlalchemy import Column, String, Integer, Double, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
