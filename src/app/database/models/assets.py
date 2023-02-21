@@ -4,11 +4,11 @@ from sqlalchemy import Column, String, Integer, LargeBinary, ForeignKey
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 
-from _base import BaseModel
+from app.database.models._base import BaseDbModel
 
 _ASSET_PROPERTY_NAME_LENGTH = 100
 
-class Asset(BaseModel):
+class Asset(BaseDbModel):
     """Asset model
 
     An asset is an item of interest which occupies a physical point in space
@@ -26,7 +26,7 @@ class Asset(BaseModel):
     floor = relationship("Floor", back_populates="assets")
     asset_hotspots = relationship("Hotspot", back_populates="asset")
 
-class AssetType(BaseModel):
+class AssetType(BaseDbModel):
     """Asset Type model
 
     Asset types help distinguish assets from each other
@@ -42,7 +42,7 @@ class AssetType(BaseModel):
     assets = relationship("Asset", back_populates="asset_type")
     asset_property_names = relationship("AssetPropertyName", back_populates="asset_type")
 
-class AssetPropertyName(BaseModel):
+class AssetPropertyName(BaseDbModel):
     """Asset Property Name model
 
     Asset property names define the custom information to be stored for assets based on their types.
@@ -59,7 +59,7 @@ class AssetPropertyName(BaseModel):
     asset_type = relationship("AssetType", back_populates="asset_property_names")
     asset_properties = relationship("AssetProperty", back_populates="asset_property_name")
 
-class AssetProperty(BaseModel):
+class AssetProperty(BaseDbModel):
     """Asset Property model
 
     Asset properties are the actual, custom information stored for assets.

@@ -4,9 +4,9 @@ from sqlalchemy import Column, String, Integer, Double, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 
-from _base import BaseModel
+from app.database.models._base import BaseDbModel
 
-class Photo(BaseModel):
+class Photo(BaseDbModel):
     """Photo model
 
     A photo is a normal photo or a 360 panoramic photo.
@@ -37,7 +37,7 @@ class Photo(BaseModel):
     # The hotspots that have this photo as the destination photo
     source_hotspots = relationship("Hotspots", back_populates="destination_photo")
 
-class Hotspot(BaseModel):
+class Hotspot(BaseDbModel):
     """Hotspot model
 
     A hotspot is an item tagged in a photo, usually visualized by an icon. The item can be an

@@ -4,9 +4,9 @@ from sqlalchemy import Column, String, DateTime, Integer, Boolean, ForeignKey, U
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 
-from _base import BaseModel
+from app.database.models._base import BaseDbModel
 
-class Site(BaseModel):
+class Site(BaseDbModel):
     """Site model
 
     A site is a physical location containing one or more surveys
@@ -19,7 +19,7 @@ class Site(BaseModel):
 
     surveys = relationship("Survey", back_populates="site")
 
-class Survey(BaseModel):
+class Survey(BaseDbModel):
     """Survey model
 
     A survey is a data collection visit to a site.
@@ -39,7 +39,7 @@ class Survey(BaseModel):
     # There should only be one "latest" survey per site
     UniqueConstraint("site_id", "is_latest")
 
-class SubSurvey(BaseModel):
+class SubSurvey(BaseDbModel):
     """Sub Survey model
 
     A sub survey is a part of the complete site survey. A sub survey could be useful for large sites,
@@ -56,7 +56,7 @@ class SubSurvey(BaseModel):
     survey = relationship("Survey", back_populates="sub_surveys")
     floors = relationship("Floor", back_populates="sub_survey")
 
-class Floor(BaseModel):
+class Floor(BaseDbModel):
     """Floor model
 
     Many surveyed sites have buildings and many buildings have multiple floors, thus, the need
@@ -80,7 +80,7 @@ class Floor(BaseModel):
     assets = relationship("Asset", back_populates="floor")
     photos = relationship("Photo", back_populates="floor")
 
-class FloorOverlay(BaseModel):
+class FloorOverlay(BaseDbModel):
     """Floor Overlay model
 
     A floor overlay is an image overlayed on a floor. This is typically used to display a
