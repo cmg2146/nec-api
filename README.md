@@ -21,6 +21,8 @@ The following environment variables must be configured, at run time, for proper 
   * "development" or "production"
 * DATABASE_URL
   * The URL to the PostgreSQL database
+* ALLOWED_ORIGINS
+  * Comma separated list of CORS allowed origins
 
 For development, all environment variables have already been set in the docker compose file and can
 be tweaked as needed. Some other environment variables, not listed above, are required for development and
@@ -33,3 +35,4 @@ TODO: Setup Alembic and provide instructions.
 The following documentation was helpful to setup this project:
 
 [FastAPI](https://fastapi.tiangolo.com/)
+[FastAPI with PostgreSQL Starter](https://github.com/tiangolo/full-stack-fastapi-postgresql)
