@@ -33,7 +33,7 @@ class AssetType(BaseDbModel):
 
     Asset types help distinguish assets from each other
     """
-    __tablename__ = "asset"
+    __tablename__ = "asset_type"
 
     name = Column(String(length=100), nullable=False)
     description = Column(String(length=255), nullable=True)

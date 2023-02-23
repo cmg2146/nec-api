@@ -1,6 +1,6 @@
 """Module containing photo and related database models"""
 
-from sqlalchemy import Column, String, Integer, Double, Boolean, ForeignKey
+from sqlalchemy import Column, String, Integer, Float, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 
@@ -18,7 +18,7 @@ class Photo(BaseDbModel):
     coordinates = Column(Geometry(geometry_type='POINT', srid=4326), nullable=False)
     """The latitude and longitude of the photo."""
 
-    heading = Column(Double, nullable=False, default=0.0)
+    heading = Column(Float, nullable=False, default=0.0)
     """Direction, relative to true north, of the center of the photo."""
 
     is_cubic_pano = Column(Boolean, nullable=True, default=None)
@@ -89,7 +89,7 @@ class Hotspot(BaseDbModel):
 
     # NOTE: if we had 3 dimensional data for all assets and photos (and image processing), hotspots could
     # be located automatically.
-    x_coord = Column(Double, nullable=False)
+    x_coord = Column(Float, nullable=False)
     """Horizontal location of the hotspot in the photo.
 
     For a pano, the value is in the range [-pi, pi] with the origin at the center of the image.
@@ -97,7 +97,7 @@ class Hotspot(BaseDbModel):
     For a normal photo, the value is in the range [0, 1] with the origin at the top left of the image.
     """
 
-    y_coord = Column(Double, nullable=False)
+    y_coord = Column(Float, nullable=False)
     """Vertical location of the hotspot in the photo.
 
     For a pano, the value is in the range [-pi/2, pi/2] with the origin at the center of the image.
