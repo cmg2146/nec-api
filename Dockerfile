@@ -1,16 +1,27 @@
+FROM python:3.11-slim as install-deps
+
+# install dependencies
+WORKDIR /app
+COPY ./requirements.txt ./
+RUN pip install --no-cache-dir --upgrade -r ./requirements.txt
+
+# The docker compose file is dependent on the correct working directory to
+# properly start uvicorn, so set it here.
+WORKDIR /app/src
+
+# No CMD or entrypoint. In development, docker compose targets this stage and
+# specifies the entrypoint and command. In production, we fall through to next stage.
+
+
 FROM python:3.11-slim
 
 ENV FASTAPI_ENV=production
 
-# install dependencies
+# copy dependencies installed in previous stage and then copy source code
 WORKDIR /app
-COPY ./requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir --upgrade -r ./requirements.txt
+COPY --from=install-deps /app ./
+COPY ./src ./src
 
-# copy app
 WORKDIR /app/src
-COPY ./src ./
-
-WORKDIR /app/src/app
-ENTRYPOINT ["uvicorn", "main:app"]
+ENTRYPOINT ["uvicorn", "app.main:app"]
 CMD ["--host", "0.0.0.0", "--port", "80"]
