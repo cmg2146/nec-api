@@ -1,11 +1,10 @@
 """Base classes for database models"""
 
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import as_declarative
 from sqlalchemy import Column, Integer, DateTime
 
-Base = declarative_base()
-
-class BaseDbModel(Base):
+@as_declarative()
+class BaseDbModel:
     """Base database model class
 
     The base model contains columns shared by all tables, for example, the primary key column

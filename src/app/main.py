@@ -12,14 +12,21 @@ class AppSettings(BaseSettings):
     ALLOWED_ORIGINS: list[AnyHttpUrl] = []
 
     @validator("ALLOWED_ORIGINS", pre=True)
-    def extract_allowed_origins(cls, v: str) -> list[str]:
-        return [origin.strip() for origin in v.split(",")]
+    def extract_allowed_origins(cls, v: str | list) -> list:
+        if isinstance(v, str):
+            return [origin.strip() for origin in v.split(",")]
+        elif isinstance(v, list):
+            return v
+        raise ValueError(v)
+
+
+appSettings = AppSettings()
 
 # configure CORS
-if AppSettings.ALLOWED_ORIGINS:
+if appSettings.ALLOWED_ORIGINS:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[str(origin) for origin in AppSettings.ALLOWED_ORIGINS],
+        allow_origins=[str(origin) for origin in appSettings.ALLOWED_ORIGINS],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

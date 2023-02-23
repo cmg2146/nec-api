@@ -5,7 +5,7 @@ from datetime import date
 
 from pydantic import Field
 
-from database.models.sites import MAX_NAME_LENGTH
+from app.database.models.sites import MAX_NAME_LENGTH
 from app.schemas._base import BaseSchemaModelInDb
 
 class Site(BaseSchemaModelInDb):
