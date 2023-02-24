@@ -29,7 +29,16 @@ be tweaked as needed. Some other environment variables, not listed above, are re
 have also been set in the docker-compose file.
 
 ## Database Migrations
-TODO: Setup Alembic and provide instructions.
+Migrations must be added whenever making schema changes to the database. To add a migration, with the app running,
+run the following command in a terminal to connect to api container:
+
+```docker-compose exec api bash```
+
+And then run the following command in the "database" directory:
+
+```alembic revision --autogenerate -m "Name of Migration"```
+
+The app has been configured to update the database automatically (apply all pending migrations) at startup.
 
 ## Notes
 The following documentation was helpful to setup this project:

@@ -12,7 +12,7 @@ services:
       - 10000:80
     environment:
       FASTAPI_ENV: development
-      DATABASE_URL: "postgresql://admin:ckru72la3cKS@database/nec"
+      DATABASE_URL: "postgresql+asyncpg://admin:ckru72la3cKS@database/nec"
     volumes:
       - ./src:/app/src
       - ./wait-for-it.sh:/wait-for-it.sh
