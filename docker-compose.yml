@@ -27,6 +27,7 @@ services:
     ## ports:
     ##   - 5432:5432
     environment:
+      POSTGRES_DB: nec
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: "ckru72la3cKS"
     volumes:
