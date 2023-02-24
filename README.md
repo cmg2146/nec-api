@@ -38,8 +38,10 @@ And then run the following command in the "src" directory (the directory contain
 
 ```alembic revision --autogenerate -m "Name of Migration"```
 
-Although this may not be a great idea for production workloads or environments with multiple instances, the app
-has been configured to update the database automatically (apply all pending migrations) at startup.
+This will add a new migration to the code on your host, not in the container. This only works because the
+source is bind mounted in development.
+
+For development, the database is created automatically and pending migrations are automatically applied on app startup.
 
 ## Notes
 The following documentation was helpful to setup this project:
