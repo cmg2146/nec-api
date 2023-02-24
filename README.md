@@ -15,18 +15,21 @@ In development, the app can be run using Linux Docker containers by executing th
 After starting the app, the API docs can be viewed at http://localhost:10000/docs or http://localhost:10000/redoc.
 
 ### Configuration
-The following environment variables must be configured, at run time, for proper operation:
+The following run-time environment variables must be configured for proper operation:
 
 * FASTAPI_ENV
   * "development" or "production"
 * DATABASE_URL
   * The URL to the PostgreSQL database
-* ALLOWED_ORIGINS
-  * Comma separated list of CORS allowed origins
 
-For development, all environment variables have already been set in the docker compose file and can
-be tweaked as needed. Some other environment variables, not listed above, are required for development and
-have also been set in the docker-compose file.
+The following run-time environment variables are optional:
+
+* ALLOWED_ORIGINS
+  * Comma separated list of CORS allowed origins. If not provided, CORS will not be enabled.
+
+For development, required environment variables have already been set in the docker compose file and can
+be tweaked as needed. Some other environment variables, not listed above, may be required for development
+only and should be set in the docker-compose file.
 
 ## Database Migrations
 Migrations must be added whenever making schema changes to the database. To add a migration, with the app running,
