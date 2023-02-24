@@ -34,7 +34,7 @@ run the following command in a terminal to connect to api container:
 
 ```docker-compose exec api bash```
 
-And then run the following command in the "database" directory:
+And then run the following command in the "src" directory (the directory containing "alembic.ini"):
 
 ```alembic revision --autogenerate -m "Name of Migration"```
 
