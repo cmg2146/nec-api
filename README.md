@@ -44,4 +44,5 @@ The app has been configured to update the database automatically (apply all pend
 The following documentation was helpful to setup this project:
 
 [FastAPI](https://fastapi.tiangolo.com/)
+
 [FastAPI with PostgreSQL Starter](https://github.com/tiangolo/full-stack-fastapi-postgresql)
