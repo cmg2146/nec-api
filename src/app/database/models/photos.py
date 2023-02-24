@@ -57,11 +57,11 @@ class Photo(BaseDbModel):
 
     floor_id = Column(Integer, ForeignKey("floor.id"), nullable=False, index=True)
 
-    floor = relationship("Floor", back_populates="photos")
-    hotspots = relationship("Hotspot", back_populates="source_photo")
+    floor = relationship("Floor", back_populates="photos", lazy="raise")
+    hotspots = relationship("Hotspot", back_populates="source_photo", lazy="raise")
     """The hotspots visible in this photo."""
 
-    source_hotspots = relationship("Hotspots", back_populates="destination_photo")
+    source_hotspots = relationship("Hotspots", back_populates="destination_photo", lazy="raise")
     """The hotspots that have this photo as the destination photo."""
 
 class Hotspot(BaseDbModel):
@@ -105,9 +105,9 @@ class Hotspot(BaseDbModel):
     For a normal photo, the value is in the range [0, 1] with the origin at the top left of the image.
     """
 
-    source_photo = relationship("Photo", back_populates="hotspots")
-    asset = relationship("Asset", back_populates="asset_hotspots")
-    destination_photo = relationship("Photo", "source_hotspots")
+    source_photo = relationship("Photo", back_populates="hotspots", lazy="raise")
+    asset = relationship("Asset", back_populates="asset_hotspots", lazy="raise")
+    destination_photo = relationship("Photo", "source_hotspots", lazy="raise")
 
     def is_asset_hotspot(self) -> bool:
         return self.asset_id is not None

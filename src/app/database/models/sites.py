@@ -22,9 +22,9 @@ class Site(BaseDbModel):
 
     parent_site_id = Column(Integer, ForeignKey("site.id"), nullable=True, index=True)
 
-    surveys = relationship("Survey", back_populates="site")
-    parent_site = relationship("Site", back_populates="sub_sites")
-    sub_sites = relationship("Site", back_populates="parent_site")
+    surveys = relationship("Survey", back_populates="site", lazy="raise")
+    parent_site = relationship("Site", back_populates="sub_sites", lazy="raise")
+    sub_sites = relationship("Site", back_populates="parent_site", lazy="raise")
 
 class Survey(BaseDbModel):
     """Survey model
@@ -39,8 +39,8 @@ class Survey(BaseDbModel):
     site_id = Column(Integer, ForeignKey("site.id"), nullable=False, index=True)
     is_latest = Column(Boolean, nullable=False, default=False)
 
-    site = relationship("Site", back_populates="surveys")
-    floors = relationship("Floor", back_populates="survey")
+    site = relationship("Site", back_populates="surveys", lazy="raise")
+    floors = relationship("Floor", back_populates="survey", lazy="raise")
 
     # There should only be one "latest" survey per site
     UniqueConstraint("site_id", "is_latest")
@@ -60,10 +60,10 @@ class Floor(BaseDbModel):
     name = Column(String(length=MAX_NAME_LENGTH), nullable=False)
     survey_id = Column(Integer, ForeignKey("survey.id"), nullable=False, index=True)
 
-    survey = relationship("Survey", back_populates="floors")
-    floor_overlays = relationship("FloorOverlay", back_populates="floor")
-    assets = relationship("Asset", back_populates="floor")
-    photos = relationship("Photo", back_populates="floor")
+    survey = relationship("Survey", back_populates="floors", lazy="raise")
+    floor_overlays = relationship("FloorOverlay", back_populates="floor", lazy="raise")
+    assets = relationship("Asset", back_populates="floor", lazy="raise")
+    photos = relationship("Photo", back_populates="floor", lazy="raise")
 
 class FloorOverlay(BaseDbModel):
     """Floor Overlay model
@@ -80,4 +80,4 @@ class FloorOverlay(BaseDbModel):
     extent = Column(Geometry(geometry_type='POLYGON', srid=4326, dimension=2), nullable=False)
     floor_id = Column(Integer, ForeignKey("floor.id"), nullable=False, index=True)
 
-    floor = relationship("Floor", back_populates="floor_overlays")
+    floor = relationship("Floor", back_populates="floor_overlays", lazy="raise")

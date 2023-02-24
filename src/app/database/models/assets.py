@@ -23,10 +23,10 @@ class Asset(BaseDbModel):
     asset_type_id = Column(Integer, ForeignKey("asset_type.id"), nullable=False, index=True)
     floor_id = Column(Integer, ForeignKey("floor.id"), nullable=False, index=True)
 
-    asset_type = relationship("AssetType", back_populates="assets")
-    asset_properties = relationship("AssetProperty", back_populates="asset")
-    floor = relationship("Floor", back_populates="assets")
-    asset_hotspots = relationship("Hotspot", back_populates="asset")
+    asset_type = relationship("AssetType", back_populates="assets", lazy="raise")
+    asset_properties = relationship("AssetProperty", back_populates="asset", lazy="raise")
+    floor = relationship("Floor", back_populates="assets", lazy="raise")
+    asset_hotspots = relationship("Hotspot", back_populates="asset", lazy="raise")
 
 class AssetType(BaseDbModel):
     """Asset Type model
@@ -40,8 +40,8 @@ class AssetType(BaseDbModel):
     category = Column(String(length=100), nullable=True)
     icon = Column(LargeBinary, nullable=False)
 
-    assets = relationship("Asset", back_populates="asset_type")
-    asset_property_names = relationship("AssetPropertyName", back_populates="asset_type")
+    assets = relationship("Asset", back_populates="asset_type", lazy="raise")
+    asset_property_names = relationship("AssetPropertyName", back_populates="asset_type", lazy="raise")
 
 class AssetPropertyName(BaseDbModel):
     """Asset Property Name model
@@ -55,8 +55,8 @@ class AssetPropertyName(BaseDbModel):
     name = Column(String(length=_ASSET_PROPERTY_NAME_LENGTH), nullable=False)
     asset_type_id = Column(Integer, ForeignKey("asset_type.id"), nullable=False, index=True)
 
-    asset_type = relationship("AssetType", back_populates="asset_property_names")
-    asset_properties = relationship("AssetProperty", back_populates="asset_property_name")
+    asset_type = relationship("AssetType", back_populates="asset_property_names", lazy="raise")
+    asset_properties = relationship("AssetProperty", back_populates="asset_property_name", lazy="raise")
 
 class AssetProperty(BaseDbModel):
     """Asset Property model
@@ -74,5 +74,5 @@ class AssetProperty(BaseDbModel):
     # when updating property names - we can change names going forward without affecting existing assets,
     # retroactively change existing assets, or both.
 
-    asset_property_name = relationship("AssetPropertyName", back_populates="asset_properties")
-    asset = relationship("Asset", back_populates="asset_properties")
+    asset_property_name = relationship("AssetPropertyName", back_populates="asset_properties", lazy="raise")
+    asset = relationship("Asset", back_populates="asset_properties", lazy="raise")
