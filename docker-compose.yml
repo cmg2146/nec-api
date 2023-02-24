@@ -6,29 +6,28 @@ services:
     build:
       context: .
       target: install-deps
-    entrypoint: ["/wait-for-it.sh", "database:5432", "-t", "30", "--", "uvicorn", "app.main:app"]
+    entrypoint: ["/wait-for-it.sh", "database:5432", "-t", "30", "--", "/start-api.sh"]
     command: ["--host", "0.0.0.0", "--port", "80"]
     ports:
       - 10000:80
     environment:
       FASTAPI_ENV: development
-      DATABASE_URL: "postgresql+asyncpg://admin:ckru72la3cKS@database/nec"
+      DATABASE_URL: "postgresql+asyncpg://nec:ckru72la3cKS@database/nec"
     volumes:
       - ./src:/app/src
       - ./wait-for-it.sh:/wait-for-it.sh
+      - ./start-api.sh:/start-api.sh
     depends_on:
       - database
 
   database:
     image: postgis/postgis:15-3.3
-    # The port mapping is intentionally commented out. It is here simply to show port 5432,
-    # the default Postgres port, is used by the database on the network created by Docker.
-    # This can be uncommented to connect to the database from the host using pgAdmin.
-    ## ports:
-    ##   - 5432:5432
+    # 5432 is the default postgres port. Mapping to host so you can use pgAdmin
+    ports:
+      - 5432:5432
     environment:
       POSTGRES_DB: nec
-      POSTGRES_USER: admin
+      POSTGRES_USER: nec
       POSTGRES_PASSWORD: "ckru72la3cKS"
     volumes:
       - database:/var/lib/postgresql/data

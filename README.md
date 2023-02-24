@@ -38,7 +38,8 @@ And then run the following command in the "src" directory (the directory contain
 
 ```alembic revision --autogenerate -m "Name of Migration"```
 
-The app has been configured to update the database automatically (apply all pending migrations) at startup.
+Although this may not be a great idea for production workloads or environments with multiple instances, the app
+has been configured to update the database automatically (apply all pending migrations) at startup.
 
 ## Notes
 The following documentation was helpful to setup this project:
