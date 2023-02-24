@@ -17,7 +17,7 @@ class Asset(BaseDbModel):
 
     name = Column(String(length=100), nullable=False)
     description = Column(String(length=255), nullable=True)
-    coordinates = Column(Geometry(geometry_type='POINT', srid=4326), nullable=False)
+    coordinates = Column(Geometry(geometry_type='POINT', srid=4326, spatial_index=True), nullable=False)
     """The latitude and longitude of the asset."""
 
     asset_type_id = Column(Integer, ForeignKey("asset_type.id"), nullable=False, index=True)

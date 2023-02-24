@@ -15,7 +15,7 @@ class Photo(BaseDbModel):
 
     name = Column(String(length=100), nullable=False)
     description = Column(String(length=255), nullable=True)
-    coordinates = Column(Geometry(geometry_type='POINT', srid=4326), nullable=False)
+    coordinates = Column(Geometry(geometry_type='POINT', srid=4326, spatial_index=True), nullable=False)
     """The latitude and longitude of the photo."""
 
     heading = Column(Float, nullable=False, default=0.0)

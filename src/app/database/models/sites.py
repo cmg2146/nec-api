@@ -17,7 +17,7 @@ class Site(BaseDbModel):
     __tablename__ = "site"
 
     name = Column(String(length=MAX_NAME_LENGTH), nullable=False)
-    coordinates = Column(Geometry(geometry_type='POINT', srid=4326), nullable=False)
+    coordinates = Column(Geometry(geometry_type='POINT', srid=4326, spatial_index=True), nullable=False)
     """The latitude and longitude of the site."""
 
     parent_site_id = Column(Integer, ForeignKey("site.id"), nullable=True, index=True)
@@ -42,8 +42,10 @@ class Survey(BaseDbModel):
     site = relationship("Site", back_populates="surveys", lazy="raise")
     floors = relationship("Floor", back_populates="survey", lazy="raise")
 
-    # There should only be one "latest" survey per site
-    UniqueConstraint("site_id", "is_latest")
+    __table_args__ = (
+        # There should only be one "latest" survey per site
+        UniqueConstraint("site_id", "is_latest"),
+    )
 
 class Floor(BaseDbModel):
     """Floor model

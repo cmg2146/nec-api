@@ -9,6 +9,6 @@ class BaseDbModel(DeclarativeBase):
     The base model contains columns shared by all tables, for example, the primary key column
     and date/time metadata
     """
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
     created = Column(DateTime, nullable=False)
     modified = Column(DateTime, nullable=True)
