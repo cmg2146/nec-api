@@ -23,8 +23,7 @@ class Site(BaseDbModel):
     parent_site_id = Column(Integer, ForeignKey("site.id"), nullable=True, index=True)
 
     surveys = relationship("Survey", back_populates="site", lazy="raise")
-    parent_site = relationship("Site", back_populates="sub_sites", lazy="raise")
-    sub_sites = relationship("Site", back_populates="parent_site", lazy="raise")
+    sub_sites = relationship("Site", lazy="raise")
 
 class Survey(BaseDbModel):
     """Survey model
