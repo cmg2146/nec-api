@@ -1,24 +1,36 @@
-"""Pydantic models for Sites and related models"""
+"""Pydantic models for Sites"""
 
-import math
-from datetime import date
-
-from pydantic import Field
+from pydantic import BaseModel, Field, validator
 
 from app.database.models.sites import MAX_NAME_LENGTH
 from app.schemas._base import BaseSchemaModelInDb
+from app.schemas.coordinates import Coordinates, convert_geoalchemy_element
 
-class Site(BaseSchemaModelInDb):
+class SiteBase(BaseModel):
+    """Base Pydantic model for a Site"""
+    name: str = Field(max_length=MAX_NAME_LENGTH)
+    coordinates: Coordinates
+    parent_site_id: int | None = Field(
+        default=None,
+        description="The Id of this site's parent site."
+        # TODO: Set example to null
+    )
+
+    # pydantic validators
+    _convert_coordinates = validator(
+        'coordinates',
+        pre=True,
+        allow_reuse=True
+    )(convert_geoalchemy_element)
+
+class Site(SiteBase, BaseSchemaModelInDb):
     """Pydantic model for a Site"""
-    name: str = Field(max_length=MAX_NAME_LENGTH)
-    latitude: float = Field(ge=-math.pi/2, le=math.pi/2)
-    longitude: float = Field(ge=-math.pi, le=math.pi)
-    parent_site_id: int | None = None
 
-class Survey(BaseSchemaModelInDb):
-    """Pydantic model for a Survey"""
-    name: str = Field(max_length=MAX_NAME_LENGTH)
-    start_date: date
-    end_date: date
-    site_id: int
-    is_latest: bool = False
+    class Config:
+        orm_mode = True
+
+class SiteCreate(SiteBase):
+    pass
+
+class SiteUpdate(SiteBase):
+    pass

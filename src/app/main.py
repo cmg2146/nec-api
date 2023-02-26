@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.endpoints import sites
 from app.settings import settings
 
-app = FastAPI()
+app = FastAPI(title="NEC API")
 
 # configure CORS
 if settings.ALLOWED_ORIGINS:
