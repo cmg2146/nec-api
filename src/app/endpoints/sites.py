@@ -14,7 +14,7 @@ from app.dependencies import get_db
 
 router = APIRouter(
     prefix="/sites",
-    tags=["sites"],
+    tags=["Sites"],
     responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}}
 )
 
@@ -133,7 +133,7 @@ async def delete_site(
 #==========================================================================================
 # Sub-Resource Operations
 #==========================================================================================
-@router.post("/{id}/surveys", tags=["surveys"], status_code=status.HTTP_201_CREATED, response_model=schemas.Survey)
+@router.post("/{id}/surveys", tags=["Surveys"], status_code=status.HTTP_201_CREATED, response_model=schemas.Survey)
 async def create_survey(
     id: int = Path(description="The ID of the site the survey belongs to"),
     data: schemas.SurveyCreate = Body(description="The new survey to create"),
@@ -151,7 +151,7 @@ async def create_survey(
 
     return survey
 
-@router.get("/{id}/surveys", tags=["surveys"], response_model=list[schemas.Survey])
+@router.get("/{id}/surveys", tags=["Surveys"], response_model=list[schemas.Survey])
 async def get_surveys(
     id: int = Path(description="The ID of the site to get surveys for"),
     sort_by: schemas.SortByWithName = Query(default=schemas.SortByWithName.NAME, description="The field to order results by"),

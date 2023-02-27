@@ -53,9 +53,6 @@ class FloorOverlay(FloorOverlayBase, BaseSchemaModelInDb):
     original_filename: str | None = Field(
         description="The uploaded/original name of the overlay image file"
     )
-    stored_filename: str | None = Field(
-        description="The name of the overlay image file stored on disk"
-    )
 
     class Config:
         orm_mode = True

@@ -12,7 +12,7 @@ from app.dependencies import get_db
 
 router = APIRouter(
     prefix="/surveys",
-    tags=["surveys"],
+    tags=["Surveys"],
     responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}}
 )
 
@@ -97,7 +97,7 @@ async def delete_survey(
 #==========================================================================================
 # Sub-Resource Operations
 #==========================================================================================
-@router.post("/{id}/floors", tags=["floors"], status_code=status.HTTP_201_CREATED, response_model=schemas.Floor)
+@router.post("/{id}/floors", tags=["Floors"], status_code=status.HTTP_201_CREATED, response_model=schemas.Floor)
 async def create_floor(
     id: int = Path(description="The ID of the survey the floor belongs to"),
     data: schemas.FloorCreate = Body(description="The new floor to create"),
@@ -115,7 +115,7 @@ async def create_floor(
 
     return floor
 
-@router.get("/{id}/floors", tags=["floors"], response_model=list[schemas.Floor])
+@router.get("/{id}/floors", tags=["Floors"], response_model=list[schemas.Floor])
 async def get_floors(
     id: int = Path(description="The ID of the survey to get floors for"),
     sort_by: schemas.SortByWithName = Query(default=schemas.SortByWithName.NAME, description="The field to order results by"),

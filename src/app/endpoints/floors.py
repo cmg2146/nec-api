@@ -12,7 +12,7 @@ from app.dependencies import get_db
 
 router = APIRouter(
     prefix="/floors",
-    tags=["floors"],
+    tags=["Floors"],
     responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}}
 )
 
@@ -97,7 +97,7 @@ async def delete_floor(
 #==========================================================================================
 # Sub-Resource Operations
 #==========================================================================================
-@router.post("/{id}/overlays/", tags=["overlays"], status_code=status.HTTP_201_CREATED, response_model=schemas.FloorOverlay)
+@router.post("/{id}/overlays/", tags=["Overlays"], status_code=status.HTTP_201_CREATED, response_model=schemas.FloorOverlay)
 async def create_overlay(
     id: int = Path(description="The ID of the floor to associated with the overlay"),
     data: schemas.FloorOverlayCreate = Body(description="The new overlay to create"),
@@ -116,7 +116,7 @@ async def create_overlay(
 
     return overlay
 
-@router.get("/{id}/overlays/", tags=["overlays"], response_model=list[schemas.FloorOverlay])
+@router.get("/{id}/overlays/", tags=["Overlays"], response_model=list[schemas.FloorOverlay])
 async def get_overlays(
     id: int = Path(description="The ID of the floor to get overlays for"),
     sort_by: schemas.SortBy = Query(default=schemas.SortBy.CREATED, description="The field to order results by"),

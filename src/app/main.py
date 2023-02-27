@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.endpoints import sites, surveys, floors, overlays
+from app.endpoints import sites, surveys, floors, overlays, assets, asset_types
 from app.settings import settings
 
 app = FastAPI(title="NEC API")
@@ -21,3 +21,5 @@ app.include_router(sites.router)
 app.include_router(surveys.router)
 app.include_router(floors.router)
 app.include_router(overlays.router)
+app.include_router(assets.router)
+app.include_router(asset_types.router)

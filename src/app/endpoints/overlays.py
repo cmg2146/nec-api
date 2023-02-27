@@ -12,7 +12,7 @@ from app.dependencies import get_db
 
 router = APIRouter(
     prefix="/overlays",
-    tags=["overlays"],
+    tags=["Overlays"],
     responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}}
 )
 
