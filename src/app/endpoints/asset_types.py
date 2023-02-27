@@ -92,7 +92,7 @@ async def get_asset_type(
 async def serve_asset_type_icon_file(
     id: int = Path(description="The ID of the asset to get the icon file for"),
     db: AsyncSession = Depends(get_db)
-) -> any:
+):
     """Serve the actual icon file"""
     asset_type = await _get(id, db)
 

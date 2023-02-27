@@ -1,10 +1,10 @@
-from pydantic import AnyHttpUrl, BaseSettings, FilePath, PostgresDsn, validator
+from pydantic import AnyHttpUrl, BaseSettings, DirectoryPath, PostgresDsn, validator
 
 class AppSettings(BaseSettings):
     FASTAPI_ENV: str
     DATABASE_URL: PostgresDsn
     ALLOWED_ORIGINS: list[AnyHttpUrl] = []
-    FILE_UPLOAD_DIR: FilePath
+    FILE_UPLOAD_DIR: DirectoryPath
 
     @validator("ALLOWED_ORIGINS", pre=True)
     def extract_allowed_origins(cls, v: str | list) -> list:

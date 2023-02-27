@@ -76,7 +76,7 @@ async def get_photo(
 async def serve_photo_file(
     id: int = Path(description="The ID of the photo to get the image file for"),
     db: AsyncSession = Depends(get_db)
-) -> any:
+):
     """Serve the actual photo file"""
     photo = await _get(id, db)
 

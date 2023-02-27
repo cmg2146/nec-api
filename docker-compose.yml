@@ -13,7 +13,9 @@ services:
     environment:
       FASTAPI_ENV: development
       DATABASE_URL: "postgresql+asyncpg://nec:ckru72la3cKS@database/nec"
+      FILE_UPLOAD_DIR: "/home/nec-api/uploads"
     volumes:
+      - api:/home/nec-api/uploads
       - ./src:/app/src
       - ./wait-for-it.sh:/wait-for-it.sh
       - ./start-api.sh:/start-api.sh
@@ -33,4 +35,5 @@ services:
       - database:/var/lib/postgresql/data
 
 volumes:
+  api:
   database:

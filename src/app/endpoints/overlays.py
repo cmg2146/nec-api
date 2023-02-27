@@ -64,7 +64,7 @@ async def get_overlay(
 async def serve_overlay_file(
     id: int = Path(description="The ID of the overlay to get the image file for"),
     db: AsyncSession = Depends(get_db)
-) -> any:
+):
     """Serve the actual overlay image file"""
     overlay = await _get(id, db)
 
