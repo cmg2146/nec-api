@@ -34,8 +34,8 @@ async def _raise_404_if_not_found(
     db: AsyncSession
 ):
     query = select(models.Survey.id).where(models.Survey.id == id)
-    site = await db.scalar(query)
-    if not site:
+    survey = await db.scalar(query)
+    if not survey:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Survey not found"

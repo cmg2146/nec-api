@@ -34,8 +34,8 @@ async def _raise_404_if_not_found(
     db: AsyncSession
 ):
     query = select(models.Asset.id).where(models.Asset.id == id)
-    site = await db.scalar(query)
-    if not site:
+    asset = await db.scalar(query)
+    if not asset:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Asset not found"
