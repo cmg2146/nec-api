@@ -19,6 +19,22 @@ router = APIRouter(
 #==========================================================================================
 # Asset Type Resource Operations
 #==========================================================================================
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.AssetType)
+async def create_asset_type(
+    data: schemas.AssetTypeCreate = Body(description="The new asset type to create"),
+    db: AsyncSession = Depends(get_db)
+) -> any:
+    """Create a new asset type"""
+    dataDict = data.dict()
+    dataDict['created'] = datetime.utcnow()
+
+    asset_type = models.AssetType(**dataDict)
+    db.add(asset_type)
+    await db.commit()
+    await db.refresh(asset_type)
+
+    return asset_type
+
 @router.get("/", response_model=list[schemas.AssetType])
 async def get_asset_types(
     sort_by: schemas.SortByWithName = Query(default=schemas.SortByWithName.NAME, description="The field to order results by"),
@@ -140,7 +156,7 @@ async def get_property_names(
     return result.all()
 
 @router.put("/{id}/property-names/{property_name_id}", response_model=schemas.AssetPropertyName)
-async def update_property(
+async def update_property_name(
     id: int = Path(description="The asset type ID"),
     property_name_id: int = Path(description="The ID of the property name to update"),
     data: schemas.AssetPropertyNameUpdate = Body(description="The data to update"),

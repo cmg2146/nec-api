@@ -16,6 +16,19 @@ router = APIRouter(
     responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}}
 )
 
+async def _get(
+    id: int,
+    db: AsyncSession
+) -> models.FloorOverlay:
+    overlay = await db.get(models.Survey, id)
+    if not overlay:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Overlay not found"
+        )
+
+    return overlay
+
 #==========================================================================================
 # Floor Overlay Resource Operations
 #==========================================================================================
@@ -42,14 +55,7 @@ async def get_overlay(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Retrieve a floor overlay by ID."""
-    overlay = await db.get(models.FloorOverlay, id)
-    if not overlay:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Overlay not found"
-        )
-
-    return overlay
+    return await _get(id, db)
 
 @router.put("/{id}", response_model=schemas.FloorOverlay)
 async def update_overlay(
@@ -58,12 +64,7 @@ async def update_overlay(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Update a floor overlay."""
-    overlay = await db.get(models.FloorOverlay, id)
-    if not overlay:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Overlay not found"
-        )
+    overlay = await _get(id, db)
 
     dataDict = data.dict(exclude_unset=True)
     dataDict['extent'] = data.extent.to_wkt()
@@ -84,12 +85,6 @@ async def delete_overlay(
     db: AsyncSession = Depends(get_db)
 ) -> None:
     """Delete a floor overlay by ID"""
-    overlay = await db.get(models.FloorOverlay, id)
-    if not overlay:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Overlay not found"
-        )
-
+    overlay = await _get(id, db)
     await db.delete(overlay)
     await db.commit()

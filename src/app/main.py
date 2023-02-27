@@ -17,9 +17,9 @@ if settings.ALLOWED_ORIGINS:
     )
 
 # add api endpoints
+app.include_router(asset_types.router)
 app.include_router(sites.router)
 app.include_router(surveys.router)
 app.include_router(floors.router)
 app.include_router(overlays.router)
 app.include_router(assets.router)
-app.include_router(asset_types.router)

@@ -16,6 +16,31 @@ router = APIRouter(
     responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}}
 )
 
+async def _get(
+    id: int,
+    db: AsyncSession
+) -> models.Survey:
+    survey = await db.get(models.Survey, id)
+    if not survey:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Survey not found"
+        )
+
+    return survey
+
+async def _raise_404_if_not_found(
+    id: int,
+    db: AsyncSession
+):
+    query = select(models.Survey.id).where(models.Survey.id == id)
+    site = await db.scalar(query)
+    if not site:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Survey not found"
+        )
+
 #==========================================================================================
 # Survey Resource Operations
 #==========================================================================================
@@ -42,14 +67,7 @@ async def get_survey(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Retrieve a survey by ID."""
-    survey = await db.get(models.Survey, id)
-    if not survey:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Survey not found"
-        )
-
-    return survey
+    return await _get(id, db)
 
 @router.put("/{id}", response_model=schemas.Survey)
 async def update_survey(
@@ -58,12 +76,7 @@ async def update_survey(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Update a survey."""
-    survey = await db.get(models.Survey, id)
-    if not survey:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Survey not found"
-        )
+    survey = await _get(id, db)
 
     dataDict = data.dict(exclude_unset=True)
     dataDict['modified'] = datetime.utcnow()
@@ -83,13 +96,7 @@ async def delete_survey(
     db: AsyncSession = Depends(get_db)
 ) -> None:
     """Delete a survey by ID"""
-    survey = await db.get(models.Survey, id)
-    if not survey:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Survey not found"
-        )
-
+    survey = await _get(id, db)
     await db.delete(survey)
     await db.commit()
 
@@ -104,6 +111,8 @@ async def create_floor(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Create a new floor"""
+    await _raise_404_if_not_found(id, db)
+
     dataDict = data.dict()
     dataDict['survey_id'] = id
     dataDict['created'] = datetime.utcnow()
@@ -123,6 +132,8 @@ async def get_floors(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query a survey's floors"""
+    await _raise_404_if_not_found(id, db)
+
     if sort_direction == schemas.SortDirection.DESCENDING:
         sort_by = desc(sort_by)
 
