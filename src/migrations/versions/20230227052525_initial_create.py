@@ -1,8 +1,8 @@
 """Initial Create
 
-Revision ID: 64a582b32b03
+Revision ID: 5dd403e28449
 Revises:
-Create Date: 2023-02-24 06:09:50.812307
+Create Date: 2023-02-27 05:25:34.159211
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ from geoalchemy2 import Geometry
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '64a582b32b03'
+revision = '5dd403e28449'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -23,7 +23,8 @@ def upgrade() -> None:
     sa.Column('name', sa.String(length=100), nullable=False),
     sa.Column('description', sa.String(length=255), nullable=True),
     sa.Column('category', sa.String(length=100), nullable=True),
-    sa.Column('icon', sa.LargeBinary(), nullable=False),
+    sa.Column('original_icon_filename', sa.String(length=255), nullable=True),
+    sa.Column('stored_icon_filename', sa.String(length=255), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created', sa.DateTime(), nullable=False),
     sa.Column('modified', sa.DateTime(), nullable=True),
@@ -125,17 +126,14 @@ def upgrade() -> None:
     op.create_table('asset_property',
     sa.Column('name', sa.String(length=100), nullable=False),
     sa.Column('value', sa.String(), nullable=False),
-    sa.Column('asset_property_name_id', sa.Integer(), nullable=False),
     sa.Column('asset_id', sa.Integer(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created', sa.DateTime(), nullable=False),
     sa.Column('modified', sa.DateTime(), nullable=True),
     sa.ForeignKeyConstraint(['asset_id'], ['asset.id'], ),
-    sa.ForeignKeyConstraint(['asset_property_name_id'], ['asset_property_name.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_asset_property_asset_id'), 'asset_property', ['asset_id'], unique=False)
-    op.create_index(op.f('ix_asset_property_asset_property_name_id'), 'asset_property', ['asset_property_name_id'], unique=False)
     op.create_table('hotspot',
     sa.Column('source_photo_id', sa.Integer(), nullable=False),
     sa.Column('asset_id', sa.Integer(), nullable=True),
@@ -162,7 +160,6 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_hotspot_destination_photo_id'), table_name='hotspot')
     op.drop_index(op.f('ix_hotspot_asset_id'), table_name='hotspot')
     op.drop_table('hotspot')
-    op.drop_index(op.f('ix_asset_property_asset_property_name_id'), table_name='asset_property')
     op.drop_index(op.f('ix_asset_property_asset_id'), table_name='asset_property')
     op.drop_table('asset_property')
     op.drop_index(op.f('ix_photo_floor_id'), table_name='photo')
