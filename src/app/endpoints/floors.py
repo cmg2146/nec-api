@@ -185,3 +185,46 @@ async def get_assets(
     result = await db.scalars(query)
 
     return result.all()
+
+
+#==========================================================================================
+# Photo Sub-Resource Operations
+#==========================================================================================
+@router.post("/{id}/photos/", tags=["Photos"], status_code=status.HTTP_201_CREATED, response_model=schemas.Photo)
+async def create_photo(
+    id: int = Path(description="The ID of the floor to place the photo on"),
+    data: schemas.PhotoCreate = Body(description="The new photo to create"),
+    db: AsyncSession = Depends(get_db)
+) -> any:
+    """Create a new photo"""
+    await _raise_404_if_not_found(id, db)
+
+    dataDict = data.dict()
+    dataDict['floor_id'] = id
+    dataDict['coordinates'] = data.coordinates.to_wkt()
+    dataDict['created'] = datetime.utcnow()
+
+    photo = models.Photo(**dataDict)
+    db.add(photo)
+    await db.commit()
+    await db.refresh(photo)
+
+    return photo
+
+@router.get("/{id}/photos/", tags=["Photos"], response_model=list[schemas.Photo])
+async def get_photos(
+    id: int = Path(description="The ID of the floor to get photos for"),
+    sort_by: schemas.SortByWithName = Query(default=schemas.SortByWithName.NAME, description="The field to order results by"),
+    sort_direction: schemas.SortDirection = Query(default=schemas.SortDirection.ASCENDING),
+    db: AsyncSession = Depends(get_db)
+) -> any:
+    """Query photos on the specified floor"""
+    await _raise_404_if_not_found(id, db)
+
+    if sort_direction == schemas.SortDirection.DESCENDING:
+        sort_by = desc(sort_by)
+
+    query = select(models.Photo).where(models.Photo.floor_id == id).order_by(sort_by)
+    result = await db.scalars(query)
+
+    return result.all()

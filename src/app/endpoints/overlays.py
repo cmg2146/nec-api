@@ -1,14 +1,17 @@
 """API Endpoints for Floor Overlays"""
 
+import os
 from datetime import datetime
 
 from fastapi import APIRouter, Body, Path, Query, Depends, status, HTTPException
+from fastapi.responses import FileResponse
 from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import models
 from app import schemas
 from app.dependencies import get_db
+from app.settings import settings
 
 router = APIRouter(
     prefix="/overlays",
@@ -56,6 +59,22 @@ async def get_overlay(
 ) -> any:
     """Retrieve a floor overlay by ID."""
     return await _get(id, db)
+
+@router.get("/{id}/image", response_class=FileResponse)
+async def serve_overlay_file(
+    id: int = Path(description="The ID of the overlay to get the image file for"),
+    db: AsyncSession = Depends(get_db)
+) -> any:
+    """Serve the actual overlay image file"""
+    overlay = await _get(id, db)
+
+    if not overlay.stored_filename:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No file uploaded for this overlay record"
+        )
+
+    return os.path.join(settings.FILE_UPLOAD_DIR.absolute, overlay.stored_filename)
 
 @router.put("/{id}", response_model=schemas.FloorOverlay)
 async def update_overlay(

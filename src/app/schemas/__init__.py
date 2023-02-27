@@ -8,3 +8,4 @@ from .assets import Asset, AssetCreate, AssetUpdate
 from .assets import AssetPropertyName, AssetPropertyNameCreate, AssetPropertyNameUpdate
 from .assets import AssetProperty, AssetPropertyCreate, AssetPropertyUpdate
 from .assets import AssetType, AssetTypeCreate, AssetTypeUpdate
+from .photos import Photo, PhotoCreate, PhotoUpdate, Hotspot, HotspotCreate, HotspotUpdate

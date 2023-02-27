@@ -9,6 +9,7 @@ from app.database.models import BaseDbModel
 MAX_NAME_LENGTH = 100
 MAX_DESCRIPTION_LENGTH = 255
 
+# TODO: Split apart Photo into Photo and Pano.
 class Photo(BaseDbModel):
     """Photo model
 
@@ -81,6 +82,7 @@ class Photo(BaseDbModel):
     )
     """The hotspots that have this photo as the destination photo."""
 
+# TODO: After splitting apart Photo, only have hotspots reference panos
 class Hotspot(BaseDbModel):
     """Hotspot model
 
