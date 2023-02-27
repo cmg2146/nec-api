@@ -18,16 +18,6 @@ router = APIRouter(
     responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}}
 )
 
-class SortBy(str, Enum):
-    id = "id"
-    name = "name"
-    created = "created"
-    modified = "modified"
-
-class SortDirection(str, Enum):
-    ascending = "ascending"
-    descending = "descending"
-
 #==========================================================================================
 # Site Resource Operations
 #==========================================================================================
@@ -50,14 +40,14 @@ async def create_site(
 
 @router.get("/", response_model=list[schemas.Site])
 async def get_sites(
-    sort_by: SortBy = Query(default=SortBy.name, description="The field to order results by"),
-    sort_direction: SortDirection = Query(default=SortDirection.ascending),
+    sort_by: schemas.SortByWithName = Query(default=schemas.SortByWithName.NAME, description="The field to order results by"),
+    sort_direction: schemas.SortDirection = Query(default=schemas.SortDirection.ASCENDING),
     skip: int = Query(default=0, description="Skip the specified number of items (for pagination)"),
     limit: int = Query(default=100, description="Max number of results"),
     db: AsyncSession = Depends(get_db)
 ) -> StreamingResponse:
     """Query sites"""
-    if sort_direction == SortDirection.descending:
+    if sort_direction == schemas.SortDirection.DESCENDING:
         sort_by = desc(sort_by)
 
     query = select(models.Site).order_by(sort_by).offset(skip).limit(limit)
@@ -83,10 +73,14 @@ async def get_site(
 @router.get("/{id}/sub-sites", response_model=list[schemas.Site])
 async def get_sub_sites(
     id: int = Path(description="The ID of the site to get sub sites for"),
-    sort_by: SortBy = Query(default=SortBy.name, description="The field to order results by"),
+    sort_by: schemas.SortByWithName = Query(default=schemas.SortByWithName.NAME, description="The field to order results by"),
+    sort_direction: schemas.SortDirection = Query(default=schemas.SortDirection.ASCENDING),
     db: AsyncSession = Depends(get_db)
-) -> StreamingResponse:
+) -> any:
     """Query sub sites"""
+    if sort_direction == schemas.SortDirection.DESCENDING:
+        sort_by = desc(sort_by)
+
     query = select(models.Site).where(models.Site.parent_site_id == id).order_by(sort_by)
     result = await db.scalars(query)
 
@@ -107,8 +101,8 @@ async def update_site(
         )
 
     dataDict = data.dict(exclude_unset=True)
-    dataDict['modified'] = datetime.utcnow()
     dataDict['coordinates'] = data.coordinates.to_wkt()
+    dataDict['modified'] = datetime.utcnow()
 
     for field in dataDict:
         setattr(site, field, dataDict[field])
@@ -139,13 +133,35 @@ async def delete_site(
 #==========================================================================================
 # Sub-Resource Operations
 #==========================================================================================
+@router.post("/{id}/surveys", status_code=status.HTTP_201_CREATED, response_model=schemas.Survey)
+async def create_survey(
+    id: int = Path(description="The ID of the site the survey belongs to"),
+    data: schemas.SurveyCreate = Body(description="The new survey to create"),
+    db: AsyncSession = Depends(get_db)
+) -> any:
+    """Create a new survey"""
+    dataDict = data.dict()
+    dataDict['site_id'] = id
+    dataDict['created'] = datetime.utcnow()
+
+    survey = models.Survey(**dataDict)
+    db.add(survey)
+    await db.commit()
+    await db.refresh(survey)
+
+    return survey
+
 @router.get("/{id}/surveys", response_model=list[schemas.Survey])
 async def get_surveys(
     id: int = Path(description="The ID of the site to get surveys for"),
-    sort_by: SortBy = Query(default=SortBy.name, description="The field to order results by"),
+    sort_by: schemas.SortByWithName = Query(default=schemas.SortByWithName.NAME, description="The field to order results by"),
+    sort_direction: schemas.SortDirection = Query(default=schemas.SortDirection.ASCENDING),
     db: AsyncSession = Depends(get_db)
-) -> StreamingResponse:
+) -> any:
     """Query a site's surveys"""
+    if sort_direction == schemas.SortDirection.DESCENDING:
+        sort_by = desc(sort_by)
+
     query = select(models.Survey).where(models.Survey.site_id == id).order_by(sort_by)
     result = await db.scalars(query)
 

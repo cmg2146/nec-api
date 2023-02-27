@@ -5,15 +5,16 @@ from shapely.geometry import Point
 from pydantic import BaseModel, Field
 
 class Coordinates(BaseModel):
-    latitude: float = Field(
-        ge=-90.0,
-        le=90.0,
-        description="Latitude in degrees"
-    )
+    """Pydantic model for a geographic point"""
     longitude: float = Field(
         ge=-180.0,
         le=180.0,
         description="Longitude in degrees"
+    )
+    latitude: float = Field(
+        ge=-90.0,
+        le=90.0,
+        description="Latitude in degrees"
     )
 
     def to_wkt(self) -> str:

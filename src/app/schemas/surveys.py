@@ -16,15 +16,15 @@ class SurveyBase(BaseModel):
     end_date: date = Field(
         description="The end date, or projected end date, of the survey"
     )
-    site_id: int = Field(
-        description="The Id of the site this survey is for"
-    )
     is_latest: bool = Field(
         description="Indicates if this is the latest survey for this site"
     )
 
 class Survey(SurveyBase, BaseSchemaModelInDb):
     """Pydantic model for a Survey"""
+    site_id: int = Field(
+        description="The Id of the site this survey is for"
+    )
 
     class Config:
         orm_mode = True
