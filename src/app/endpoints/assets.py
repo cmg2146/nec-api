@@ -115,6 +115,7 @@ async def create_property(
     await _raise_404_if_not_found(id, db)
 
     dataDict = data.dict()
+    dataDict['asset_id'] = id
     dataDict['created'] = datetime.utcnow()
 
     prop = models.AssetProperty(**dataDict)

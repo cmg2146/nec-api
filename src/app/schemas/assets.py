@@ -6,8 +6,6 @@ from app.database.models.assets import MAX_NAME_LENGTH, MAX_DESCRIPTION_LENGTH
 from app.schemas._base import BaseSchemaModelInDb
 from app.schemas.coordinates import Coordinates, convert_geoalchemy_element
 
-MAX_ICON_SIZE_BYTES = 10*1024 #10KB
-
 #==========================================================================================
 # Asset
 #==========================================================================================

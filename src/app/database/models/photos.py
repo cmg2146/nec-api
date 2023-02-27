@@ -6,6 +6,9 @@ from geoalchemy2 import Geometry
 
 from app.database.models import BaseDbModel
 
+MAX_NAME_LENGTH = 100
+MAX_DESCRIPTION_LENGTH = 255
+
 class Photo(BaseDbModel):
     """Photo model
 
@@ -13,8 +16,8 @@ class Photo(BaseDbModel):
     """
     __tablename__ = "photo"
 
-    name = Column(String(length=100), nullable=False)
-    description = Column(String(length=255), nullable=True)
+    name = Column(String(length=MAX_NAME_LENGTH), nullable=False)
+    description = Column(String(length=MAX_DESCRIPTION_LENGTH), nullable=True)
     coordinates = Column(Geometry(geometry_type='POINT', srid=4326, spatial_index=True), nullable=False)
     """The latitude and longitude of the photo."""
 
@@ -47,7 +50,7 @@ class Photo(BaseDbModel):
     from the camera yet, but they have been placed on the map.
     """
 
-    custom_marker = Column(String(length=100), nullable=True)
+    custom_marker = Column(String(length=MAX_NAME_LENGTH), nullable=True)
     """Custom data to associate a photo record with the correct image file.
 
     The custom marker is useful when the actual photos do not get uploaded until after data

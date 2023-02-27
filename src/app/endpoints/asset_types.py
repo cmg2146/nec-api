@@ -130,6 +130,7 @@ async def create_property_name(
 ) -> any:
     """Add a new property name to the asset type"""
     dataDict = data.dict()
+    dataDict['asset_type_id'] = id
     dataDict['created'] = datetime.utcnow()
 
     prop = models.AssetPropertyName(**dataDict)
