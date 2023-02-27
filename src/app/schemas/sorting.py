@@ -7,7 +7,10 @@ class SortBy(str, Enum):
     CREATED = "created"
     MODIFIED = "modified"
 
-class SortByWithName(SortBy):
+class SortByWithName(str, Enum):
+    ID = "id"
+    CREATED = "created"
+    MODIFIED = "modified"
     NAME = "name"
 
 class SortDirection(str, Enum):
