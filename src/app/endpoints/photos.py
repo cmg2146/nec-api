@@ -69,7 +69,6 @@ async def serve_photo_file(
 ):
     """Serve the actual photo file"""
     photo = await _get(id, db)
-
     if not photo.stored_filename:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -88,7 +87,6 @@ async def upload_photo_file(
     photo = await _get(id, db)
 
     utils.validate_file_extension(file, True, ".jpg", ".jpeg", ".png")
-
     new_file_path = await utils.store_uploaded_file(
         file,
         settings.FILE_UPLOAD_DIR,

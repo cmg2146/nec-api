@@ -97,7 +97,6 @@ async def serve_asset_type_icon_file(
 ):
     """Serve the actual icon file"""
     asset_type = await _get(id, db)
-
     if not asset_type.stored_icon_filename:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -116,7 +115,6 @@ async def upload_asset_type_icon_file(
     asset_type = await _get(id, db)
 
     utils.validate_file_extension(file, True, ".jpg", ".jpeg", ".png", ".svg")
-
     new_file_path = await utils.store_uploaded_file(
         file,
         settings.FILE_UPLOAD_DIR,

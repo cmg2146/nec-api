@@ -81,7 +81,6 @@ async def serve_pano_file(
 ):
     """Serve the actual pano image file"""
     pano = await _get(id, db)
-
     if not pano.stored_filename:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -100,9 +99,7 @@ async def upload_pano_file(
     pano = await _get(id, db)
 
     utils.validate_file_extension(file, True, ".jpg", ".jpeg", ".png")
-
     # TODO: validate aspect ratio is 2:1
-
     new_file_path = await utils.store_uploaded_file(
         file,
         settings.FILE_UPLOAD_DIR,
