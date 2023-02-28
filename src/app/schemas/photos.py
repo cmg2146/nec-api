@@ -19,15 +19,11 @@ class PhotoBase(BaseModel):
         max_length=MAX_DESCRIPTION_LENGTH
     )
     coordinates: Coordinates
-    heading: float = Field(
-        default=0.0,
+    heading: float | None = Field(
+        default=None,
         ge=-180.0,
         le=180.0,
         description="Direction, relative to true north, of the center of the photo, in degrees."
-    )
-    is_cubic_pano: bool | None = Field(
-        default=None,
-        description="None - Regular Photo, False - Spherical Pano, True - Cubic Pano"
     )
     custom_marker: str | None = Field(
         default=None,
@@ -56,41 +52,6 @@ class Photo(PhotoBase, BaseSchemaModelInDb):
     # actual image files and the filenames are determined/generated automatically.
     original_filename: str | None = Field(
         description="The uploaded/original name of the photo"
-    )
-
-    class Config:
-        orm_mode = True
-
-
-#==========================================================================================
-# Hotspot
-#==========================================================================================
-class HotspotBase(BaseModel):
-    """Base Pydantic model for a Hotspot"""
-    x_coord: float = Field(
-        description="Horizontal location of the hotspot in the photo."
-    )
-    y_coord: float = Field(
-        description="Horizontal location of the hotspot in the photo."
-    )
-
-class HotspotCreate(HotspotBase):
-    asset_id: int | None = Field(
-        description="The ID of the asset this hotspot references, if applicable."
-    )
-    destination_photo_id: int | None = Field(
-        description="The ID of the photo this hotspot references, if applicable."
-    )
-
-    #TODO: Check that either asset or destination photo is not null
-
-class HotspotUpdate(HotspotBase):
-    pass
-
-class Hotspot(HotspotBase, BaseSchemaModelInDb):
-    """Pydantic model for a Hotspot"""
-    source_photo_id: int = Field(
-        description="The Id of the photo this hotspot belongs to."
     )
 
     class Config:

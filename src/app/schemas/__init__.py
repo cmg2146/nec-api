@@ -4,8 +4,9 @@ from .extent import Extent
 from .sites import Site, SiteCreate, SiteUpdate
 from .surveys import Survey, SurveyCreate, SurveyUpdate
 from .floors import Floor, FloorCreate, FloorUpdate, FloorOverlay, FloorOverlayCreate, FloorOverlayUpdate
+from .panos import Pano, PanoCreate, PanooUpdate, Hotspot, HotspotCreate, HotspotUpdate
 from .assets import Asset, AssetCreate, AssetUpdate
 from .assets import AssetPropertyName, AssetPropertyNameCreate, AssetPropertyNameUpdate
 from .assets import AssetProperty, AssetPropertyCreate, AssetPropertyUpdate
 from .assets import AssetType, AssetTypeCreate, AssetTypeUpdate
-from .photos import Photo, PhotoCreate, PhotoUpdate, Hotspot, HotspotCreate, HotspotUpdate
+from .photos import Photo, PhotoCreate, PhotoUpdate

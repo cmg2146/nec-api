@@ -188,6 +188,49 @@ async def get_assets(
 
 
 #==========================================================================================
+# Pano Sub-Resource Operations
+#==========================================================================================
+@router.post("/{id}/panos/", tags=["Panos"], status_code=status.HTTP_201_CREATED, response_model=schemas.Pano)
+async def create_pano(
+    id: int = Path(description="The ID of the floor to place the pano on"),
+    data: schemas.PanoCreate = Body(description="The new pano to create"),
+    db: AsyncSession = Depends(get_db)
+) -> any:
+    """Create a new pano"""
+    await _raise_404_if_not_found(id, db)
+
+    dataDict = data.dict()
+    dataDict['floor_id'] = id
+    dataDict['coordinates'] = data.coordinates.to_wkt()
+    dataDict['created'] = datetime.utcnow()
+
+    pano = models.Pano(**dataDict)
+    db.add(pano)
+    await db.commit()
+    await db.refresh(pano)
+
+    return pano
+
+@router.get("/{id}/panos/", tags=["Panos"], response_model=list[schemas.Pano])
+async def get_panos(
+    id: int = Path(description="The ID of the floor to get panos for"),
+    sort_by: schemas.SortByWithName = Query(default=schemas.SortByWithName.NAME, description="The field to order results by"),
+    sort_direction: schemas.SortDirection = Query(default=schemas.SortDirection.ASCENDING),
+    db: AsyncSession = Depends(get_db)
+) -> any:
+    """Query panos on the specified floor"""
+    await _raise_404_if_not_found(id, db)
+
+    if sort_direction == schemas.SortDirection.DESCENDING:
+        sort_by = desc(sort_by)
+
+    query = select(models.Pano).where(models.Pano.floor_id == id).order_by(sort_by)
+    result = await db.scalars(query)
+
+    return result.all()
+
+
+#==========================================================================================
 # Photo Sub-Resource Operations
 #==========================================================================================
 @router.post("/{id}/photos/", tags=["Photos"], status_code=status.HTTP_201_CREATED, response_model=schemas.Photo)

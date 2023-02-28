@@ -34,18 +34,6 @@ async def _get(
 
     return photo
 
-async def _raise_404_if_not_found(
-    id: int,
-    db: AsyncSession
-):
-    query = select(models.Photo.id).where(models.Photo.id == id)
-    photo = await db.scalar(query)
-    if not photo:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Photo not found"
-        )
-
 #==========================================================================================
 # Photo Resource Operations
 #==========================================================================================
@@ -141,105 +129,5 @@ async def delete_photo(
 ) -> None:
     """Delete a photo by ID"""
     photo = await _get(id, db)
-
-    # TODO: Need to delete all of this photos hotspots and any hotspot that links to this photo
     await db.delete(photo)
-    await db.commit()
-
-
-#==========================================================================================
-# Hotspot Sub-Resource Operations
-#==========================================================================================
-@router.post("/{id}/hotspots/", status_code=status.HTTP_201_CREATED, response_model=schemas.Hotspot)
-async def create_hotspot(
-    id: int = Path(description="The ID of the photo to place the hotspot in"),
-    data: schemas.HotspotCreate = Body(description="The new hotspot to create"),
-    db: AsyncSession = Depends(get_db)
-) -> any:
-    """Create a new hotspot"""
-    await _raise_404_if_not_found(id, db)
-
-    dataDict = data.dict()
-    dataDict['source_photo_id'] = id
-    dataDict['created'] = datetime.utcnow()
-
-    hotspot = models.Hotspot(**dataDict)
-    db.add(hotspot)
-    await db.commit()
-    await db.refresh(hotspot)
-
-    return hotspot
-
-@router.get("/{id}/hotspots/", response_model=list[schemas.Hotspot])
-async def get_hotspots(
-    id: int = Path(description="The ID of the photo to get hotspots for"),
-    sort_by: schemas.SortBy = Query(default=schemas.SortBy.CREATED, description="The field to order results by"),
-    sort_direction: schemas.SortDirection = Query(default=schemas.SortDirection.ASCENDING),
-    db: AsyncSession = Depends(get_db)
-) -> any:
-    """Query a photo's hotspots"""
-    await _raise_404_if_not_found(id, db)
-
-    if sort_direction == schemas.SortDirection.DESCENDING:
-        sort_by = desc(sort_by)
-
-    query = select(models.Hotspot).where(models.Hotspot.source_photo_id == id).order_by(sort_by)
-    result = await db.scalars(query)
-
-    return result.all()
-
-@router.put("/{id}/hotspots/{hotspot_id}", response_model=schemas.Hotspot)
-async def update_hotspot(
-    id: int = Path(description="Photo ID"),
-    hotspot_id: int = Path(description="ID of the hotspot to update"),
-    data: schemas.HotspotUpdate = Body(description="The data to update"),
-    db: AsyncSession = Depends(get_db)
-) -> any:
-    """Update a hotspot."""
-    await _raise_404_if_not_found(id, db)
-
-    #check if hotspot exists first
-    query = select(models.Hotspot).where(
-        models.Hotspot.id == hotspot_id &
-        models.Hotspot.source_photo_id == id
-    )
-    hotspot = await db.scalar(query)
-    if not hotspot:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Hotspot not found"
-        )
-
-    dataDict = data.dict(exclude_unset=True)
-    dataDict['modified'] = datetime.utcnow()
-    for field in dataDict:
-        setattr(hotspot, field, dataDict[field])
-
-    db.add(hotspot)
-    await db.commit()
-    await db.refresh(hotspot)
-
-    return hotspot
-
-@router.delete("/{id}/hotspots/{hotspot_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_hotspot(
-    id: int = Path(description="Photo ID"),
-    hotspot_id: int = Path(description="ID of the hotspot to delete"),
-    db: AsyncSession = Depends(get_db)
-) -> None:
-    """Delete a hotspot by ID"""
-    await _raise_404_if_not_found(id, db)
-
-    query = select(models.Hotspot).where(
-        models.Hotspot.id == hotspot_id &
-        models.Hotspot.source_photo_id == id
-    )
-    hotspot = await db.scalar(query)
-    if not hotspot:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Hotspot not found"
-        )
-
-    await db.delete(hotspot)
     await db.commit()

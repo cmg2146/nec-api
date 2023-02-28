@@ -64,6 +64,7 @@ class Floor(BaseDbModel):
     survey = relationship("Survey", back_populates="floors", lazy="raise")
     floor_overlays = relationship("FloorOverlay", back_populates="floor", lazy="raise")
     assets = relationship("Asset", back_populates="floor", lazy="raise")
+    panos = relationship("Pano", back_populates="floor", lazy="raise")
     photos = relationship("Photo", back_populates="floor", lazy="raise")
 
 class FloorOverlay(BaseDbModel):

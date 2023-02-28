@@ -63,7 +63,6 @@ The following documentation was helpful to setup this project:
 [FastAPI with PostgreSQL Starter](https://github.com/tiangolo/full-stack-fastapi-postgresql)
 
 TODO:
-* update photos data model per TODOs in photos.py
 * Move all overlays to floors router and update uris
 * better API examples and defaults (specifically null defaults)
 * Beter exception handling in the endpoints. verify/add logic for related entities, including how to move an item across floors, etc.
