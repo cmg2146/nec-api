@@ -1,11 +1,17 @@
 # NEC (Not-Esri Collector) API
-NOTE: This repo is a work in progress.
-
 This repo contains a web API which can be used as a backend to create a generic, geographical survey/data collection
 application. This web API could be used by a desktop application, a mobile app, or a frontend web app.
 
 This web API is implemented with FastAPI and SQLAlchemy/GeoAlchemy2. Geographical data is stored in a PostgreSQL
 database with the PostGIS extension.
+
+This app is not production ready and lacks features like:
+* Authentication
+* API versioning
+* logging
+* auditing database changes
+* tests
+* Proper storage for user uploads
 
 ## Build
 In development, the app can be run using Linux Docker containers by executing the following command at the repo root:
@@ -21,6 +27,9 @@ The following run-time environment variables must be configured for proper opera
   * "development" or "production"
 * DATABASE_URL
   * The URL to the PostgreSQL database
+* FILE_UPLOAD_DIR
+  * The directory where user file uploads will be stored. For production, a storage service should
+  be used, but a file system will do for now.
 
 The following run-time environment variables are optional:
 
@@ -52,3 +61,14 @@ The following documentation was helpful to setup this project:
 [FastAPI](https://fastapi.tiangolo.com/)
 
 [FastAPI with PostgreSQL Starter](https://github.com/tiangolo/full-stack-fastapi-postgresql)
+
+TODO:
+* update photos data model per TODOs in photos.py
+* Move all overlays to floors router and update uris
+* better API examples and defaults (specifically null defaults)
+* Beter exception handling in the endpoints. verify/add logic for related entities, including how to move an item across floors, etc.
+* Consolidate very similar query code with generics
+* Go through TODOs in code
+* Does sqlalchemy cascade delete by default?
+* Figure out best way to handle props and prop names
+* replace filesystem for uploads with azurite
