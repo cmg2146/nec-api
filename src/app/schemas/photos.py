@@ -6,6 +6,8 @@ from app.database.models.photos import MAX_NAME_LENGTH, MAX_DESCRIPTION_LENGTH
 from app.schemas._base import BaseSchemaModelInDb
 from app.schemas.coordinates import Coordinates, convert_geoalchemy_element
 
+MAX_PHOTO_FILE_SIZE_BYTES = 20*1024*1024 #20MB
+
 #==========================================================================================
 # Photo
 #==========================================================================================
@@ -18,6 +20,7 @@ class PhotoBase(BaseModel):
     )
     coordinates: Coordinates
     heading: float = Field(
+        default=0.0,
         ge=-180.0,
         le=180.0,
         description="Direction, relative to true north, of the center of the photo, in degrees."

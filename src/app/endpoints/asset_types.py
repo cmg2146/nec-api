@@ -3,15 +3,17 @@
 import os
 from datetime import datetime
 
-from fastapi import APIRouter, Body, Path, Query, Depends, status, HTTPException
+from fastapi import APIRouter, Body, Path, Query, UploadFile, File, Depends, status, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import models
+from app import utils
 from app import schemas
+from app.database import models
 from app.dependencies import get_db
 from app.settings import settings
+from app.schemas.assets import MAX_ICON_FILE_SIZE_BYTES
 
 router = APIRouter(
     prefix="/asset-types",
@@ -102,7 +104,29 @@ async def serve_asset_type_icon_file(
             detail="No icon file uploaded for this asset type"
         )
 
-    return os.path.join(settings.FILE_UPLOAD_DIR.absolute, asset_type.stored_icon_filename)
+    return os.path.join(settings.FILE_UPLOAD_DIR, asset_type.stored_icon_filename)
+
+@router.put("/{id}/file")
+async def upload_asset_type_icon_file(
+    id: int = Path(description="The ID of the asset type to upload the icon for"),
+    file: UploadFile = File(description="The icon file to upload"),
+    db: AsyncSession = Depends(get_db)
+):
+    """Upload/update asset type icon file"""
+    asset_type = await _get(id, db)
+
+    utils.validate_file_extension(file, True, ".jpg", ".jpeg", ".png", ".svg")
+
+    new_file_path = await utils.store_uploaded_file(
+        file,
+        settings.FILE_UPLOAD_DIR,
+        MAX_ICON_FILE_SIZE_BYTES
+    )
+    asset_type.stored_icon_filename = os.path.split(new_file_path)[-1]
+    asset_type.original_icon_filename = file.filename
+
+    db.add(asset_type)
+    await db.commit()
 
 @router.put("/{id}", response_model=schemas.AssetType)
 async def update_asset_type(

@@ -3,15 +3,17 @@
 import os
 from datetime import datetime
 
-from fastapi import APIRouter, Body, Path, Query, Depends, status, HTTPException
+from fastapi import APIRouter, Body, Path, Query, UploadFile, File, Depends, status, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import models
+from app import utils
 from app import schemas
+from app.database import models
 from app.dependencies import get_db
 from app.settings import settings
+from app.schemas.photos import MAX_PHOTO_FILE_SIZE_BYTES
 
 router = APIRouter(
     prefix="/photos",
@@ -72,7 +74,7 @@ async def get_photo(
     """Retrieve a photo by ID."""
     return await _get(id, db)
 
-@router.get("/{id}", response_class=FileResponse)
+@router.get("/{id}/file", response_class=FileResponse)
 async def serve_photo_file(
     id: int = Path(description="The ID of the photo to get the image file for"),
     db: AsyncSession = Depends(get_db)
@@ -86,7 +88,29 @@ async def serve_photo_file(
             detail="No file uploaded for this photo record"
         )
 
-    return os.path.join(settings.FILE_UPLOAD_DIR.absolute, photo.stored_filename)
+    return os.path.join(settings.FILE_UPLOAD_DIR, photo.stored_filename)
+
+@router.put("/{id}/file")
+async def upload_photo_file(
+    id: int = Path(description="The ID of the photo to upload the image for"),
+    file: UploadFile = File(description="The actual photo to upload"),
+    db: AsyncSession = Depends(get_db)
+):
+    """Upload/update the actual image file for a photo record"""
+    photo = await _get(id, db)
+
+    utils.validate_file_extension(file, True, ".jpg", ".jpeg", ".png")
+
+    new_file_path = await utils.store_uploaded_file(
+        file,
+        settings.FILE_UPLOAD_DIR,
+        MAX_PHOTO_FILE_SIZE_BYTES
+    )
+    photo.stored_filename = os.path.split(new_file_path)[-1]
+    photo.original_filename = file.filename
+
+    db.add(photo)
+    await db.commit()
 
 @router.put("/{id}", response_model=schemas.Photo)
 async def update_photo(
