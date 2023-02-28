@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.endpoints import sites, surveys, floors, overlays, assets, asset_types, panos, photos
+from app.endpoints import sites, surveys, overlays, assets, asset_types, panos, photos
 from app.settings import settings
 
 app = FastAPI(title="NEC API")
@@ -20,7 +20,6 @@ if settings.ALLOWED_ORIGINS:
 app.include_router(asset_types.router)
 app.include_router(sites.router)
 app.include_router(surveys.router)
-app.include_router(floors.router)
 app.include_router(overlays.router)
 app.include_router(panos.router)
 app.include_router(assets.router)

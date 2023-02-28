@@ -1,4 +1,4 @@
-"""API Endpoints for Floor Overlays"""
+"""API Endpoints for Overlays"""
 
 import os
 from datetime import datetime

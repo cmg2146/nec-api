@@ -65,7 +65,7 @@ The following documentation was helpful to setup this project:
 TODO:
 * Consolidate very similar query code with generics
 * better API examples and defaults (specifically null defaults)
-* Beter exception handling in the endpoints. verify/add logic for related entities, including how to move an item across floors, etc.
+* Better exception handling in the endpoints. verify/add logic for related entities.
 * Go through TODOs in code
 * Does sqlalchemy cascade delete by default?
 * Figure out best way to handle props and prop names
