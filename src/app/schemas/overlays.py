@@ -1,10 +1,7 @@
 """Pydantic models for Surveys"""
 
-from datetime import date
-
 from pydantic import BaseModel, Field, validator
 
-from app.database.models.sites import MAX_NAME_LENGTH
 from app.schemas._base import BaseSchemaModelInDb
 from app.schemas import Extent
 from app.schemas.extent import convert_geoalchemy_element
@@ -13,30 +10,14 @@ MAX_OVERLAY_SIZE_BYTES = 30*1024*1024 #30MB
 # SVGs are intensive to render, so limit file size more
 MAX_OVERLAY_SIZE_BYTES_SVG = 10*1024*1024 #10MB
 
-class FloorBase(BaseModel):
-    """Base Pydantic model for a Floor"""
-    name: str = Field(max_length=MAX_NAME_LENGTH)
-
-class Floor(FloorBase, BaseSchemaModelInDb):
-    """Pydantic model for a Floor"""
-    survey_id: int = Field(
-        description="The survey this floor belongs to"
-    )
-
-    class Config:
-        orm_mode = True
-
-class FloorCreate(FloorBase):
-    pass
-
-class FloorUpdate(FloorBase):
-    pass
-
-
-class FloorOverlayBase(BaseModel):
-    """Base Pydantic model for a Floor Overlay"""
+class OverlayBase(BaseModel):
+    """Base Pydantic model for an Overlay"""
     extent: Extent = Field(
         description="The geoographic bounding box of the overlay"
+    )
+    level: int = Field(
+        default=1,
+        description="The floor level the overlay is on."
     )
 
     # pydantic validators
@@ -46,10 +27,10 @@ class FloorOverlayBase(BaseModel):
         allow_reuse=True
     )(convert_geoalchemy_element)
 
-class FloorOverlay(FloorOverlayBase, BaseSchemaModelInDb):
+class Overlay(OverlayBase, BaseSchemaModelInDb):
     """Pydantic model for a Floor Overlay"""
-    floor_id: int = Field(
-        description="The floor this overlay belongs to"
+    survey_id: int = Field(
+        description="The survey this overlay belongs to"
     )
 
     # File names are not "user" configurable - there is a separate endpoint to upload the
@@ -61,8 +42,8 @@ class FloorOverlay(FloorOverlayBase, BaseSchemaModelInDb):
     class Config:
         orm_mode = True
 
-class FloorOverlayCreate(FloorOverlayBase):
+class OverlayCreate(OverlayBase):
     pass
 
-class FloorOverlayUpdate(FloorOverlayBase):
+class OverlayUpdate(OverlayBase):
     pass

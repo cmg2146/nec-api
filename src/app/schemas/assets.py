@@ -22,6 +22,10 @@ class AssetBase(BaseModel):
     asset_type_id: int = Field(
         description="The Id of this asset's type."
     )
+    level: int = Field(
+        default=1,
+        description="The floor level the asset is on."
+    )
 
     # pydantic validators
     _convert_coordinates = validator(
@@ -38,8 +42,8 @@ class AssetUpdate(AssetBase):
 
 class Asset(AssetBase, BaseSchemaModelInDb):
     """Pydantic model for an Asset"""
-    floor_id: int = Field(
-        description="The Id of the floor this asset belongs to."
+    survey_id: int = Field(
+        description="The Id of the survey this asset belongs to."
     )
 
     class Config:

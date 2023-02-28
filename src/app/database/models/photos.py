@@ -1,6 +1,6 @@
 """Module containing photo and related database models"""
 
-from sqlalchemy import Column, String, Integer, Float, ForeignKey
+from sqlalchemy import Column, String, Integer, Float, ForeignKey, Index
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 
@@ -48,10 +48,15 @@ class Photo(BaseDbModel):
     also allows photos to be bulk uploaded.
     """
 
-    floor_id = Column(Integer, ForeignKey("floor.id"), nullable=False, index=True)
+    survey_id = Column(Integer, ForeignKey("survey.id"), nullable=False, index=True)
+    level = Column(Integer, default=1, nullable=False)
 
-    floor = relationship(
-        "Floor",
+    survey = relationship(
+        "Survey",
         back_populates="photos",
         lazy="raise"
+    )
+
+    __table_args__ = (
+        Index('ix_photo_survey_id_level', "survey_id", "level"),
     )

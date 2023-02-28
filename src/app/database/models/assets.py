@@ -1,6 +1,6 @@
 """Module containing asset and related database models"""
 
-from sqlalchemy import Column, String, Integer, ForeignKey
+from sqlalchemy import Column, String, Integer, ForeignKey, Index
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 
@@ -22,12 +22,17 @@ class Asset(BaseDbModel):
     """The latitude and longitude of the asset."""
 
     asset_type_id = Column(Integer, ForeignKey("asset_type.id"), nullable=False, index=True)
-    floor_id = Column(Integer, ForeignKey("floor.id"), nullable=False, index=True)
+    survey_id = Column(Integer, ForeignKey("survey.id"), nullable=False, index=True)
+    level = Column(Integer, default=1, nullable=False)
 
     asset_type = relationship("AssetType", back_populates="assets", lazy="raise")
     asset_properties = relationship("AssetProperty", back_populates="asset", lazy="raise")
-    floor = relationship("Floor", back_populates="assets", lazy="raise")
+    survey = relationship("Survey", back_populates="assets", lazy="raise")
     asset_hotspots = relationship("Hotspot", back_populates="asset", lazy="raise")
+
+    __table_args__ = (
+        Index('ix_asset_survey_id_level', "survey_id", "level"),
+    )
 
 class AssetType(BaseDbModel):
     """Asset Type model

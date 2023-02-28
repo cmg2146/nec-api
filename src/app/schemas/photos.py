@@ -30,6 +30,11 @@ class PhotoBase(BaseModel):
         max_length=MAX_NAME_LENGTH,
         description="Custom data to associate a photo record with the correct image file."
     )
+    level: int = Field(
+        default=1,
+        description="The floor level the photo is on."
+    )
+
     # pydantic validators
     _convert_coordinates = validator(
         'coordinates',
@@ -45,8 +50,8 @@ class PhotoUpdate(PhotoBase):
 
 class Photo(PhotoBase, BaseSchemaModelInDb):
     """Pydantic model for a Photo"""
-    floor_id: int = Field(
-        description="The Id of the floor this photo belongs to."
+    survey_id: int = Field(
+        description="The Id of the survey this photo belongs to."
     )
     # File names are not "user" configurable - there is a separate endpoint to upload the
     # actual image files and the filenames are determined/generated automatically.

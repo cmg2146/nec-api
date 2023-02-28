@@ -13,7 +13,7 @@ from app.database import models
 from app import schemas
 from app.dependencies import get_db
 from app.settings import settings
-from app.schemas.floors import MAX_OVERLAY_SIZE_BYTES, MAX_OVERLAY_SIZE_BYTES_SVG
+from app.schemas.overlays import MAX_OVERLAY_SIZE_BYTES, MAX_OVERLAY_SIZE_BYTES_SVG
 
 router = APIRouter(
     prefix="/overlays",
@@ -24,8 +24,8 @@ router = APIRouter(
 async def _get(
     id: int,
     db: AsyncSession
-) -> models.FloorOverlay:
-    overlay = await db.get(models.FloorOverlay, id)
+) -> models.Overlay:
+    overlay = await db.get(models.Overlay, id)
     if not overlay:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -37,7 +37,7 @@ async def _get(
 #==========================================================================================
 # Floor Overlay Resource Operations
 #==========================================================================================
-@router.get("/", response_model=list[schemas.FloorOverlay])
+@router.get("/", response_model=list[schemas.Overlay])
 async def get_overlays(
     sort_by: schemas.SortBy = Query(default=schemas.SortBy.CREATED, description="The field to order results by"),
     sort_direction: schemas.SortDirection = Query(default=schemas.SortDirection.ASCENDING),
@@ -45,18 +45,18 @@ async def get_overlays(
     limit: int = Query(default=100, description="Max number of results"),
     db: AsyncSession = Depends(get_db)
 ) -> any:
-    """Query floor overlays"""
+    """Query overlays"""
     if sort_direction == schemas.SortDirection.DESCENDING:
         sort_by = desc(sort_by)
 
-    query = select(models.FloorOverlay).order_by(sort_by).offset(skip).limit(limit)
+    query = select(models.Overlay).order_by(sort_by).offset(skip).limit(limit)
     result = await db.scalars(query)
 
     return result.all()
 
-@router.get("/{id}", response_model=schemas.FloorOverlay)
+@router.get("/{id}", response_model=schemas.Overlay)
 async def get_overlay(
-    id: int = Path(description="The ID of the floor overlay to get"),
+    id: int = Path(description="The ID of the overlay to get"),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Retrieve an overlay by ID."""
@@ -99,10 +99,10 @@ async def upload_overlay_file(
     db.add(overlay)
     await db.commit()
 
-@router.put("/{id}", response_model=schemas.FloorOverlay)
+@router.put("/{id}", response_model=schemas.Overlay)
 async def update_overlay(
     id: int = Path(description="The ID of the overlay to update"),
-    data: schemas.FloorOverlayUpdate = Body(description="The data to update"),
+    data: schemas.OverlayUpdate = Body(description="The data to update"),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Update an overlay."""

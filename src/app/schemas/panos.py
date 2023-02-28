@@ -30,6 +30,11 @@ class PanoBase(BaseModel):
         max_length=MAX_NAME_LENGTH,
         description="Custom data to associate a photo record with the correct image file."
     )
+    level: int = Field(
+        default=1,
+        description="The floor level the pano is on."
+    )
+
     # pydantic validators
     _convert_coordinates = validator(
         'coordinates',
@@ -45,8 +50,8 @@ class PanooUpdate(PanoBase):
 
 class Pano(PanoBase, BaseSchemaModelInDb):
     """Pydantic model for a Pano"""
-    floor_id: int = Field(
-        description="The Id of the floor this pano belongs to."
+    survey_id: int = Field(
+        description="The Id of the survey this pano belongs to."
     )
     # only supports spherical panos right now
     is_cubic_pano: bool = Field(
