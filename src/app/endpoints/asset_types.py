@@ -105,7 +105,7 @@ async def serve_asset_type_icon_file(
 
     return os.path.join(settings.FILE_UPLOAD_DIR, asset_type.stored_icon_filename)
 
-@router.put("/{id}/file")
+@router.put("/{id}/icon")
 async def upload_asset_type_icon_file(
     id: int = Path(description="The ID of the asset type to upload the icon for"),
     file: UploadFile = File(description="The icon file to upload"),
