@@ -128,6 +128,7 @@ async def create_overlay(
 @router.get("/{id}/overlays/", tags=["Overlays"], response_model=list[schemas.Overlay])
 async def get_overlays(
     id: int = Path(description="The ID of the survey to get overlays for"),
+    level: int = Query(default=None, description="Limit results to this floor level"),
     sort_by: schemas.SortBy = Query(default=schemas.SortBy.CREATED, description="The field to order results by"),
     sort_direction: schemas.SortDirection = Query(default=schemas.SortDirection.ASCENDING),
     db: AsyncSession = Depends(get_db)
@@ -139,6 +140,9 @@ async def get_overlays(
         sort_by = desc(sort_by)
 
     query = select(models.Overlay).where(models.Overlay.survey_id == id).order_by(sort_by)
+    if level is not None:
+        query = query.where(models.Overlay.level == level)
+
     result = await db.scalars(query)
 
     return result.all()
@@ -171,6 +175,7 @@ async def create_asset(
 @router.get("/{id}/assets/", tags=["Assets"], response_model=list[schemas.Asset])
 async def get_assets(
     id: int = Path(description="The ID of the survey to get assets for"),
+    level: int = Query(default=None, description="Limit results to this floor level"),
     sort_by: schemas.SortByWithName = Query(default=schemas.SortByWithName.NAME, description="The field to order results by"),
     sort_direction: schemas.SortDirection = Query(default=schemas.SortDirection.ASCENDING),
     db: AsyncSession = Depends(get_db)
@@ -182,6 +187,9 @@ async def get_assets(
         sort_by = desc(sort_by)
 
     query = select(models.Asset).where(models.Asset.survey_id == id).order_by(sort_by)
+    if level is not None:
+        query = query.where(models.Asset.level == level)
+
     result = await db.scalars(query)
 
     return result.all()
@@ -214,6 +222,7 @@ async def create_pano(
 @router.get("/{id}/panos/", tags=["Panos"], response_model=list[schemas.Pano])
 async def get_panos(
     id: int = Path(description="The ID of the survey to get panos for"),
+    level: int = Query(default=None, description="Limit results to this floor level"),
     sort_by: schemas.SortByWithName = Query(default=schemas.SortByWithName.NAME, description="The field to order results by"),
     sort_direction: schemas.SortDirection = Query(default=schemas.SortDirection.ASCENDING),
     db: AsyncSession = Depends(get_db)
@@ -225,6 +234,9 @@ async def get_panos(
         sort_by = desc(sort_by)
 
     query = select(models.Pano).where(models.Pano.survey_id == id).order_by(sort_by)
+    if level is not None:
+        query = query.where(models.Pano.level == level)
+
     result = await db.scalars(query)
 
     return result.all()
@@ -257,6 +269,7 @@ async def create_photo(
 @router.get("/{id}/photos/", tags=["Photos"], response_model=list[schemas.Photo])
 async def get_photos(
     id: int = Path(description="The ID of the survey to get photos for"),
+    level: int = Query(default=None, description="Limit results to this floor level"),
     sort_by: schemas.SortByWithName = Query(default=schemas.SortByWithName.NAME, description="The field to order results by"),
     sort_direction: schemas.SortDirection = Query(default=schemas.SortDirection.ASCENDING),
     db: AsyncSession = Depends(get_db)
@@ -268,6 +281,9 @@ async def get_photos(
         sort_by = desc(sort_by)
 
     query = select(models.Photo).where(models.Photo.survey_id == id).order_by(sort_by)
+    if level is not None:
+        query = query.where(models.Photo.level == level)
+
     result = await db.scalars(query)
 
     return result.all()
