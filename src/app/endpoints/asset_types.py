@@ -30,7 +30,11 @@ async def create_asset_type(
     data: schemas.AssetTypeCreate = Body(description="The new asset type to create"),
     db: AsyncSession = Depends(get_db)
 ) -> any:
-    """Create a new asset type"""
+    """Create a new asset type.
+
+    Use the PUT /asset-types/{id}/icon endpoint to upload an icon file after creating
+    the asset type.
+    """
     asset_type = models.AssetType(**(data.dict()))
     return await crud.create(db, asset_type)
 

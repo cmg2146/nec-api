@@ -79,7 +79,10 @@ async def create_overlay(
     data: schemas.OverlayCreate = Body(description="The new overlay to create"),
     db: AsyncSession = Depends(get_db)
 ) -> any:
-    """Create a new overlay"""
+    """Create a new overlay.
+
+    Use the PUT /overlays/{id}/file endpoint to upload an overlay file after creating the record.
+    """
     await crud.raise_if_not_found(db, models.Survey, id, "Survey does not exist")
 
     dataDict = data.dict()
@@ -163,7 +166,11 @@ async def create_pano(
     data: schemas.PanoCreate = Body(description="The new pano to create"),
     db: AsyncSession = Depends(get_db)
 ) -> any:
-    """Create a new pano"""
+    """Create a new pano.
+
+    Use the PUT /panos/{id}/file endpoint to upload the actual pano file after
+    creating the record.
+    """
     await crud.raise_if_not_found(db, models.Survey, id, "Survey does not exist")
 
     dataDict = data.dict()
@@ -205,7 +212,11 @@ async def create_photo(
     data: schemas.PhotoCreate = Body(description="The new photo to create"),
     db: AsyncSession = Depends(get_db)
 ) -> any:
-    """Create a new photo"""
+    """Create a new photo.
+
+    Use the PUT /photos/{id}/file endpoint to upload the actual photo file after
+    creating the record.
+    """
     await crud.raise_if_not_found(db, models.Survey, id, "Survey does not exist")
 
     dataDict = data.dict()
