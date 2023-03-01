@@ -29,13 +29,14 @@ async def get_assets(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query assets"""
-    if sort_direction == schemas.SortDirection.DESCENDING:
-        sort_by = desc(sort_by)
-
-    query = select(models.Asset).order_by(sort_by).offset(skip).limit(limit)
-    result = await db.scalars(query)
-
-    return result.all()
+    return await crud.get_all_with_limit(
+        db,
+        models.Asset,
+        skip,
+        limit,
+        sort_by,
+        sort_desc = sort_direction == schemas.SortDirection.DESCENDING
+    )
 
 @router.get("/{id}", response_model=schemas.Asset)
 async def get_asset(
@@ -56,16 +57,10 @@ async def update_asset(
 
     dataDict = data.dict(exclude_unset=True)
     dataDict['coordinates'] = data.coordinates.to_wkt()
-    dataDict['modified'] = datetime.utcnow()
-
     for field in dataDict:
         setattr(asset, field, dataDict[field])
 
-    db.add(asset)
-    await db.commit()
-    await db.refresh(asset)
-
-    return asset
+    return await crud.update(db, asset)
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_asset(
@@ -73,9 +68,7 @@ async def delete_asset(
     db: AsyncSession = Depends(get_db)
 ) -> None:
     """Delete an asset by ID"""
-    asset = await crud.get(db, models.Asset, id)
-    await db.delete(asset)
-    await db.commit()
+    await crud.delete(db, models.Asset, id)
 
 
 #==========================================================================================
@@ -92,14 +85,9 @@ async def create_property(
 
     dataDict = data.dict()
     dataDict['asset_id'] = id
-    dataDict['created'] = datetime.utcnow()
-
     prop = models.AssetProperty(**dataDict)
-    db.add(prop)
-    await db.commit()
-    await db.refresh(prop)
 
-    return prop
+    return await crud.create(db, prop)
 
 @router.get("/{id}/properties", response_model=list[schemas.AssetProperty])
 async def get_properties(
@@ -142,12 +130,7 @@ async def update_property(
         )
 
     dataDict = data.dict(exclude_unset=True)
-    dataDict['modified'] = datetime.utcnow()
     for field in dataDict:
         setattr(prop, field, dataDict[field])
 
-    db.add(prop)
-    await db.commit()
-    await db.refresh(prop)
-
-    return prop
+    return await crud.update(db, prop)

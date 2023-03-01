@@ -34,13 +34,14 @@ async def get_panos(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query panos"""
-    if sort_direction == schemas.SortDirection.DESCENDING:
-        sort_by = desc(sort_by)
-
-    query = select(models.Pano).order_by(sort_by).offset(skip).limit(limit)
-    result = await db.scalars(query)
-
-    return result.all()
+    return await crud.get_all_with_limit(
+        db,
+        models.Pano,
+        skip,
+        limit,
+        sort_by,
+        sort_desc = sort_direction == schemas.SortDirection.DESCENDING
+    )
 
 @router.get("/{id}", response_model=schemas.Pano)
 async def get_pano(
@@ -84,8 +85,7 @@ async def upload_pano_file(
     pano.stored_filename = os.path.split(new_file_path)[-1]
     pano.original_filename = file.filename
 
-    db.add(pano)
-    await db.commit()
+    await crud.update(db, pano)
 
 @router.put("/{id}", response_model=schemas.Pano)
 async def update_pano(
@@ -98,16 +98,10 @@ async def update_pano(
 
     dataDict = data.dict(exclude_unset=True)
     dataDict['coordinates'] = data.coordinates.to_wkt()
-    dataDict['modified'] = datetime.utcnow()
-
     for field in dataDict:
         setattr(pano, field, dataDict[field])
 
-    db.add(pano)
-    await db.commit()
-    await db.refresh(pano)
-
-    return pano
+    return await crud.update(db, pano)
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_pano(
@@ -115,11 +109,8 @@ async def delete_pano(
     db: AsyncSession = Depends(get_db)
 ) -> None:
     """Delete a pano by ID"""
-    pano = await crud.get(db, models.Pano, id)
-
     # TODO: Need to delete all of this panos hotspots and any hotspot that links to this pano
-    await db.delete(pano)
-    await db.commit()
+    await crud.delete(db, models.Pano, id)
 
 
 #==========================================================================================
@@ -136,14 +127,9 @@ async def create_hotspot(
 
     dataDict = data.dict()
     dataDict['pano_id'] = id
-    dataDict['created'] = datetime.utcnow()
-
     hotspot = models.Hotspot(**dataDict)
-    db.add(hotspot)
-    await db.commit()
-    await db.refresh(hotspot)
 
-    return hotspot
+    return await crud.create(db, hotspot)
 
 @router.get("/{id}/hotspots/", response_model=list[schemas.Hotspot])
 async def get_hotspots(
@@ -186,15 +172,10 @@ async def update_hotspot(
         )
 
     dataDict = data.dict(exclude_unset=True)
-    dataDict['modified'] = datetime.utcnow()
     for field in dataDict:
         setattr(hotspot, field, dataDict[field])
 
-    db.add(hotspot)
-    await db.commit()
-    await db.refresh(hotspot)
-
-    return hotspot
+    return await crud.update(db, hotspot)
 
 @router.delete("/{id}/hotspots/{hotspot_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_hotspot(
@@ -216,5 +197,4 @@ async def delete_hotspot(
             detail="Hotspot not found"
         )
 
-    await db.delete(hotspot)
-    await db.commit()
+    await crud.delete(db, hotspot)

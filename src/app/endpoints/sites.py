@@ -30,14 +30,9 @@ async def create_site(
     """Create a new site"""
     dataDict = data.dict()
     dataDict['coordinates'] = data.coordinates.to_wkt()
-    dataDict['created'] = datetime.utcnow()
-
     site = models.Site(**dataDict)
-    db.add(site)
-    await db.commit()
-    await db.refresh(site)
 
-    return site
+    return await crud.create(db, site)
 
 @router.get("/", response_model=list[schemas.Site])
 async def get_sites(
@@ -48,13 +43,14 @@ async def get_sites(
     db: AsyncSession = Depends(get_db)
 ) -> StreamingResponse:
     """Query sites"""
-    if sort_direction == schemas.SortDirection.DESCENDING:
-        sort_by = desc(sort_by)
-
-    query = select(models.Site).order_by(sort_by).offset(skip).limit(limit)
-    result = await db.scalars(query)
-
-    return result.all()
+    return await crud.get_all_with_limit(
+        db,
+        models.Site,
+        skip,
+        limit,
+        sort_by,
+        sort_desc = sort_direction == schemas.SortDirection.DESCENDING
+    )
 
 @router.get("/{id}", response_model=schemas.Site)
 async def get_site(
@@ -93,16 +89,10 @@ async def update_site(
 
     dataDict = data.dict(exclude_unset=True)
     dataDict['coordinates'] = data.coordinates.to_wkt()
-    dataDict['modified'] = datetime.utcnow()
-
     for field in dataDict:
         setattr(site, field, dataDict[field])
 
-    db.add(site)
-    await db.commit()
-    await db.refresh(site)
-
-    return site
+    return await crud.update(db, site)
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_site(
@@ -110,12 +100,9 @@ async def delete_site(
     db: AsyncSession = Depends(get_db)
 ) -> None:
     """Delete a site by ID"""
-    site = await crud.get(db, models.Site, id)
-
     # TODO: Need to delete all sub-sites too. appears like default SQLAlchemy behavior
     # sets the foreign key to null.
-    await db.delete(site)
-    await db.commit()
+    await crud.delete(db, models.Site, id)
 
 
 #==========================================================================================
@@ -132,14 +119,9 @@ async def create_survey(
 
     dataDict = data.dict()
     dataDict['site_id'] = id
-    dataDict['created'] = datetime.utcnow()
-
     survey = models.Survey(**dataDict)
-    db.add(survey)
-    await db.commit()
-    await db.refresh(survey)
 
-    return survey
+    return await crud.create(db, survey)
 
 @router.get("/{id}/surveys", tags=["Surveys"], response_model=list[schemas.Survey])
 async def get_surveys(

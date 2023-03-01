@@ -29,13 +29,14 @@ async def get_surveys(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query surveys"""
-    if sort_direction == schemas.SortDirection.DESCENDING:
-        sort_by = desc(sort_by)
-
-    query = select(models.Survey).order_by(sort_by).offset(skip).limit(limit)
-    result = await db.scalars(query)
-
-    return result.all()
+    return await crud.get_all_with_limit(
+        db,
+        models.Survey,
+        skip,
+        limit,
+        sort_by,
+        sort_desc = sort_direction == schemas.SortDirection.DESCENDING
+    )
 
 @router.get("/{id}", response_model=schemas.Survey)
 async def get_survey(
@@ -55,16 +56,10 @@ async def update_survey(
     survey = await crud.get(db, models.Survey, id)
 
     dataDict = data.dict(exclude_unset=True)
-    dataDict['modified'] = datetime.utcnow()
-
     for field in dataDict:
         setattr(survey, field, dataDict[field])
 
-    db.add(survey)
-    await db.commit()
-    await db.refresh(survey)
-
-    return survey
+    return await crud.update(db, survey)
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_survey(
@@ -72,9 +67,7 @@ async def delete_survey(
     db: AsyncSession = Depends(get_db)
 ) -> None:
     """Delete a survey by ID"""
-    survey = await crud.get(db, models.Survey, id)
-    await db.delete(survey)
-    await db.commit()
+    await crud.delete(db, models.Survey, id)
 
 
 #==========================================================================================
@@ -92,14 +85,9 @@ async def create_overlay(
     dataDict = data.dict()
     dataDict['survey_id'] = id
     dataDict['extent'] = data.extent.to_wkt()
-    dataDict['created'] = datetime.utcnow()
-
     overlay = models.Overlay(**dataDict)
-    db.add(overlay)
-    await db.commit()
-    await db.refresh(overlay)
 
-    return overlay
+    return await crud.create(db, overlay)
 
 @router.get("/{id}/overlays/", tags=["Overlays"], response_model=list[schemas.Overlay])
 async def get_overlays(
@@ -139,14 +127,9 @@ async def create_asset(
     dataDict = data.dict()
     dataDict['survey_id'] = id
     dataDict['coordinates'] = data.coordinates.to_wkt()
-    dataDict['created'] = datetime.utcnow()
-
     asset = models.Asset(**dataDict)
-    db.add(asset)
-    await db.commit()
-    await db.refresh(asset)
 
-    return asset
+    return await crud.create(db, asset)
 
 @router.get("/{id}/assets/", tags=["Assets"], response_model=list[schemas.Asset])
 async def get_assets(
@@ -186,14 +169,9 @@ async def create_pano(
     dataDict = data.dict()
     dataDict['survey_id'] = id
     dataDict['coordinates'] = data.coordinates.to_wkt()
-    dataDict['created'] = datetime.utcnow()
-
     pano = models.Pano(**dataDict)
-    db.add(pano)
-    await db.commit()
-    await db.refresh(pano)
 
-    return pano
+    return await crud.create(db, pano)
 
 @router.get("/{id}/panos/", tags=["Panos"], response_model=list[schemas.Pano])
 async def get_panos(
@@ -233,14 +211,9 @@ async def create_photo(
     dataDict = data.dict()
     dataDict['survey_id'] = id
     dataDict['coordinates'] = data.coordinates.to_wkt()
-    dataDict['created'] = datetime.utcnow()
-
     photo = models.Photo(**dataDict)
-    db.add(photo)
-    await db.commit()
-    await db.refresh(photo)
 
-    return photo
+    return await crud.create(db, photo)
 
 @router.get("/{id}/photos/", tags=["Photos"], response_model=list[schemas.Photo])
 async def get_photos(

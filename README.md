@@ -63,10 +63,11 @@ The following documentation was helpful to setup this project:
 [FastAPI with PostgreSQL Starter](https://github.com/tiangolo/full-stack-fastapi-postgresql)
 
 TODO:
-* Consolidate very similar query code with generics
+* get rid of db parameter to all crud functions
 * better API examples and defaults (specifically null defaults)
 * Better exception handling in the endpoints. verify/add logic for related entities.
 * Go through TODOs in code
 * Does sqlalchemy cascade delete by default?
 * Figure out best way to handle props and prop names
 * replace filesystem for uploads with azurite
+* Formatting and documetnation improvements

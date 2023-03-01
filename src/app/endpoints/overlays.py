@@ -34,13 +34,14 @@ async def get_overlays(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query overlays"""
-    if sort_direction == schemas.SortDirection.DESCENDING:
-        sort_by = desc(sort_by)
-
-    query = select(models.Overlay).order_by(sort_by).offset(skip).limit(limit)
-    result = await db.scalars(query)
-
-    return result.all()
+    return await crud.get_all_with_limit(
+        db,
+        models.Overlay,
+        skip,
+        limit,
+        sort_by,
+        sort_desc = sort_direction == schemas.SortDirection.DESCENDING
+    )
 
 @router.get("/{id}", response_model=schemas.Overlay)
 async def get_overlay(
@@ -84,8 +85,7 @@ async def upload_overlay_file(
     overlay.stored_filename = os.path.split(new_file_path)[-1]
     overlay.original_filename = file.filename
 
-    db.add(overlay)
-    await db.commit()
+    await crud.update(db, overlay)
 
 @router.put("/{id}", response_model=schemas.Overlay)
 async def update_overlay(
@@ -98,16 +98,10 @@ async def update_overlay(
 
     dataDict = data.dict(exclude_unset=True)
     dataDict['extent'] = data.extent.to_wkt()
-    dataDict['modified'] = datetime.utcnow()
-
     for field in dataDict:
         setattr(overlay, field, dataDict[field])
 
-    db.add(overlay)
-    await db.commit()
-    await db.refresh(overlay)
-
-    return overlay
+    return await crud.update(db, overlay)
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_overlay(
@@ -115,6 +109,4 @@ async def delete_overlay(
     db: AsyncSession = Depends(get_db)
 ) -> None:
     """Delete an overlay by ID"""
-    overlay = await crud.get(db, models.Overlay, id)
-    await db.delete(overlay)
-    await db.commit()
+    await crud.delete(db, models.Overlay, id)

@@ -34,13 +34,14 @@ async def get_photos(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query photos"""
-    if sort_direction == schemas.SortDirection.DESCENDING:
-        sort_by = desc(sort_by)
-
-    query = select(models.Photo).order_by(sort_by).offset(skip).limit(limit)
-    result = await db.scalars(query)
-
-    return result.all()
+    return await crud.get_all_with_limit(
+        db,
+        models.Photo,
+        skip,
+        limit,
+        sort_by,
+        sort_desc = sort_direction == schemas.SortDirection.DESCENDING
+    )
 
 @router.get("/{id}", response_model=schemas.Photo)
 async def get_photo(
@@ -83,8 +84,7 @@ async def upload_photo_file(
     photo.stored_filename = os.path.split(new_file_path)[-1]
     photo.original_filename = file.filename
 
-    db.add(photo)
-    await db.commit()
+    await crud.update(db, photo)
 
 @router.put("/{id}", response_model=schemas.Photo)
 async def update_photo(
@@ -97,16 +97,10 @@ async def update_photo(
 
     dataDict = data.dict(exclude_unset=True)
     dataDict['coordinates'] = data.coordinates.to_wkt()
-    dataDict['modified'] = datetime.utcnow()
-
     for field in dataDict:
         setattr(photo, field, dataDict[field])
 
-    db.add(photo)
-    await db.commit()
-    await db.refresh(photo)
-
-    return photo
+    return await crud.update(db, photo)
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_photo(
@@ -114,6 +108,4 @@ async def delete_photo(
     db: AsyncSession = Depends(get_db)
 ) -> None:
     """Delete a photo by ID"""
-    photo = await crud.get(db, models.Photo, id)
-    await db.delete(photo)
-    await db.commit()
+    await crud.delete(db, models.Photo, id)
