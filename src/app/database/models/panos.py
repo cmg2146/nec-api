@@ -9,6 +9,9 @@ from app.database.models import BaseDbModel
 MAX_NAME_LENGTH = 100
 MAX_DESCRIPTION_LENGTH = 255
 
+#==========================================================================================
+# Pano Model
+#==========================================================================================
 class Pano(BaseDbModel):
     """Pano model
 
@@ -18,7 +21,14 @@ class Pano(BaseDbModel):
 
     name = Column(String(length=MAX_NAME_LENGTH), nullable=False)
     description = Column(String(length=MAX_DESCRIPTION_LENGTH), nullable=True)
-    coordinates = Column(Geometry(geometry_type='POINT', srid=4326, spatial_index=True), nullable=False)
+    coordinates = Column(
+        Geometry(
+            geometry_type='POINT',
+            srid=4326,
+            spatial_index=True
+        ),
+        nullable=False
+    )
     """The latitude and longitude of the pano."""
 
     heading = Column(Float, nullable=True, default=None)
@@ -30,8 +40,8 @@ class Pano(BaseDbModel):
     original_filename = Column(String(length=255), nullable=True)
     """Original or uploaded filename.
 
-    Column is nullable to allow for disconnected data collection, i.e. photos have not been pulled
-    from the camera yet, but they have been placed on the map.
+    Column is nullable to allow for disconnected data collection, i.e. photos have not
+    been pulled from the camera yet, but they have been placed on the map.
     """
 
     stored_filename = Column(String(length=255), nullable=True)
@@ -39,16 +49,16 @@ class Pano(BaseDbModel):
 
     The file name stored on disk will be different from the original/uploaded file name.
 
-    Column is nullable to allow for disconnected data collection, i.e. photos have not been pulled
-    from the camera yet, but they have been placed on the map.
+    Column is nullable to allow for disconnected data collection, i.e. photos have not
+    been pulled from the camera yet, but they have been placed on the map.
     """
 
     custom_marker = Column(String(length=MAX_NAME_LENGTH), nullable=True)
     """Custom data to associate a pano record with the correct image file.
 
-    The custom marker is useful when the actual photos do not get uploaded until after data
-    has been collected. The marker allows the file to be tracked with the database record and
-    also allows photos to be bulk uploaded.
+    The custom marker is useful when the actual photos do not get uploaded until after
+    data has been collected. The marker allows the file to be tracked with the database
+    record and also allows photos to be bulk uploaded.
     """
 
     survey_id = Column(Integer, ForeignKey("survey.id"), nullable=False, index=True)
@@ -79,6 +89,9 @@ class Pano(BaseDbModel):
         Index('ix_pano_survey_id_level', "survey_id", "level"),
     )
 
+#==========================================================================================
+# Hotspot Model
+#==========================================================================================
 class Hotspot(BaseDbModel):
     """Hotspot model
 
@@ -102,8 +115,8 @@ class Hotspot(BaseDbModel):
     destination_pano_id = Column(Integer, ForeignKey("pano.id"), nullable=True, index=True)
     """The ID of the pano this hotspot links to."""
 
-    # NOTE: if we had 3 dimensional data for all assets and panos (and image processing), hotspots could
-    # be located automatically.
+    # NOTE: if we had 3 dimensional data for all assets and panos (and image processing),
+    # hotspots could be located automatically.
     yaw = Column(Float, nullable=False)
     """Horizontal location of the hotspot in the pano.
 

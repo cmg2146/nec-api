@@ -1,6 +1,6 @@
 """Module containing high-level database models for sites and surveys"""
 
-from sqlalchemy import Column, String, DateTime, Date, Integer, Boolean, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, String, Date, Integer, Boolean, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from geoalchemy2 import Geometry
 
@@ -8,6 +8,9 @@ from app.database.models import BaseDbModel
 
 MAX_NAME_LENGTH = 100
 
+#==========================================================================================
+# Site Model
+#==========================================================================================
 class Site(BaseDbModel):
     """Site model
 
@@ -17,7 +20,14 @@ class Site(BaseDbModel):
     __tablename__ = "site"
 
     name = Column(String(length=MAX_NAME_LENGTH), nullable=False)
-    coordinates = Column(Geometry(geometry_type='POINT', srid=4326, spatial_index=True), nullable=False)
+    coordinates = Column(
+        Geometry(
+            geometry_type='POINT',
+            srid=4326,
+            spatial_index=True
+        ),
+        nullable=False
+    )
     """The latitude and longitude of the site."""
 
     parent_site_id = Column(Integer, ForeignKey("site.id"), nullable=True, index=True)
@@ -25,10 +35,13 @@ class Site(BaseDbModel):
     surveys = relationship("Survey", back_populates="site", lazy="raise")
     sub_sites = relationship("Site", lazy="raise")
 
+#==========================================================================================
+# Survey Model
+#==========================================================================================
 class Survey(BaseDbModel):
     """Survey model
 
-    A survey is a data collection visit to a site.
+    A survey is composed of data collected on a visit to a site.
     """
     __tablename__ = "survey"
 

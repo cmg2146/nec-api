@@ -23,14 +23,25 @@ router = APIRouter(
 )
 
 #==========================================================================================
-# Photo Resource Operations
+# Query photos
 #==========================================================================================
 @router.get("/", response_model=list[schemas.Photo])
 async def get_photos(
-    sort_by: schemas.SortByWithName = Query(default=schemas.SortByWithName.NAME, description="The field to order results by"),
-    sort_direction: schemas.SortDirection = Query(default=schemas.SortDirection.ASCENDING),
-    skip: int = Query(default=0, description="Skip the specified number of items (for pagination)"),
-    limit: int = Query(default=100, description="Max number of results"),
+    sort_by: schemas.SortByWithName = Query(
+        default=schemas.SortByWithName.NAME,
+        description="The field to order results by"
+    ),
+    sort_direction: schemas.SortDirection = Query(
+        default=schemas.SortDirection.ASCENDING
+    ),
+    skip: int = Query(
+        default=0,
+        description="Skip the specified number of items (for pagination)"
+    ),
+    limit: int = Query(
+        default=100,
+        description="Max number of results"
+    ),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query photos"""
@@ -43,6 +54,9 @@ async def get_photos(
         sort_desc = sort_direction == schemas.SortDirection.DESCENDING
     )
 
+#==========================================================================================
+# Get photo
+#==========================================================================================
 @router.get("/{id}", response_model=schemas.Photo)
 async def get_photo(
     id: int = Path(description="The ID of the photo to get"),
@@ -51,6 +65,9 @@ async def get_photo(
     """Retrieve a photo by ID."""
     return await crud.get(db, models.Photo, id)
 
+#==========================================================================================
+# Get photo file
+#==========================================================================================
 @router.get("/{id}/file", response_class=FileResponse)
 async def serve_photo_file(
     id: int = Path(description="The ID of the photo to get the image file for"),
@@ -66,6 +83,9 @@ async def serve_photo_file(
 
     return os.path.join(settings.FILE_UPLOAD_DIR, photo.stored_filename)
 
+#==========================================================================================
+# Upload photo file
+#==========================================================================================
 @router.put("/{id}/file")
 async def upload_photo_file(
     id: int = Path(description="The ID of the photo to upload the image for"),
@@ -86,6 +106,9 @@ async def upload_photo_file(
 
     await crud.update(db, photo)
 
+#==========================================================================================
+# Update photo
+#==========================================================================================
 @router.put("/{id}", response_model=schemas.Photo)
 async def update_photo(
     id: int = Path(description="The ID of the photo to update"),
@@ -102,6 +125,9 @@ async def update_photo(
 
     return await crud.update(db, photo)
 
+#==========================================================================================
+# Delete photo
+#==========================================================================================
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_photo(
     id: int = Path(description="The ID of the photo to delete"),

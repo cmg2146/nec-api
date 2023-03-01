@@ -23,7 +23,7 @@ router = APIRouter(
 )
 
 #==========================================================================================
-# Asset Type Resource Operations
+# Create Asset Type
 #==========================================================================================
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.AssetType)
 async def create_asset_type(
@@ -38,12 +38,26 @@ async def create_asset_type(
     asset_type = models.AssetType(**(data.dict()))
     return await crud.create(db, asset_type)
 
+#==========================================================================================
+# Query Asset Types
+#==========================================================================================
 @router.get("/", response_model=list[schemas.AssetType])
 async def get_asset_types(
-    sort_by: schemas.SortByWithName = Query(default=schemas.SortByWithName.NAME, description="The field to order results by"),
-    sort_direction: schemas.SortDirection = Query(default=schemas.SortDirection.ASCENDING),
-    skip: int = Query(default=0, description="Skip the specified number of items (for pagination)"),
-    limit: int = Query(default=100, description="Max number of results"),
+    sort_by: schemas.SortByWithName = Query(
+        default=schemas.SortByWithName.NAME,
+        description="The field to order results by"
+    ),
+    sort_direction: schemas.SortDirection = Query(
+        default=schemas.SortDirection.ASCENDING
+    ),
+    skip: int = Query(
+        default=0,
+        description="Skip the specified number of items (for pagination)"
+    ),
+    limit: int = Query(
+        default=100,
+        description="Max number of results"
+    ),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query asset types"""
@@ -56,6 +70,9 @@ async def get_asset_types(
         sort_desc = sort_direction == schemas.SortDirection.DESCENDING
     )
 
+#==========================================================================================
+# Get Asset Type
+#==========================================================================================
 @router.get("/{id}", response_model=schemas.AssetType)
 async def get_asset_type(
     id: int = Path(description="The ID of the asset type to get"),
@@ -64,6 +81,9 @@ async def get_asset_type(
     """Retrieve an asset type by ID."""
     return await crud.get(db, models.AssetType, id)
 
+#==========================================================================================
+# Get Asset Type Icon
+#==========================================================================================
 @router.get("/{id}/icon", response_class=FileResponse)
 async def serve_asset_type_icon_file(
     id: int = Path(description="The ID of the asset to get the icon file for"),
@@ -79,6 +99,9 @@ async def serve_asset_type_icon_file(
 
     return os.path.join(settings.FILE_UPLOAD_DIR, asset_type.stored_icon_filename)
 
+#==========================================================================================
+# Upload Asset Type Icon
+#==========================================================================================
 @router.put("/{id}/icon")
 async def upload_asset_type_icon_file(
     id: int = Path(description="The ID of the asset type to upload the icon for"),
@@ -99,6 +122,9 @@ async def upload_asset_type_icon_file(
 
     await crud.update(db, asset_type)
 
+#==========================================================================================
+# Update Asset Type
+#==========================================================================================
 @router.put("/{id}", response_model=schemas.AssetType)
 async def update_asset_type(
     id: int = Path(description="The ID of the asset type to update"),
@@ -114,6 +140,9 @@ async def update_asset_type(
 
     return await crud.update(db, asset_type)
 
+#==========================================================================================
+# Delete Asset Type
+#==========================================================================================
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_asset_type(
     id: int = Path(description="The ID of the asset type to delete"),
@@ -133,11 +162,14 @@ async def delete_asset_type(
 
     await crud.delete(db, asset_type)
 
-
 #==========================================================================================
-# Property Name Sub-Resource Operations
+# Create Property Name
 #==========================================================================================
-@router.post("/{id}/property-names", status_code=status.HTTP_201_CREATED, response_model=schemas.AssetPropertyName)
+@router.post(
+    "/{id}/property-names",
+    status_code=status.HTTP_201_CREATED,
+    response_model=schemas.AssetPropertyName
+)
 async def create_property_name(
     id: int = Path(description="The asset type ID"),
     data: schemas.AssetPropertyNameCreate = Body(description="The property name to add"),
@@ -152,25 +184,40 @@ async def create_property_name(
 
     return await crud.create(db, prop)
 
+#==========================================================================================
+# Get Property Names
+#==========================================================================================
 @router.get("/{id}/property-names", response_model=list[schemas.AssetPropertyName])
 async def get_property_names(
     id: int = Path(description="The asset type ID"),
-    sort_by: schemas.SortByWithName = Query(default=schemas.SortByWithName.NAME, description="The field to order results by"),
-    sort_direction: schemas.SortDirection = Query(default=schemas.SortDirection.ASCENDING),
+    sort_by: schemas.SortByWithName = Query(
+        default=schemas.SortByWithName.NAME,
+        description="The field to order results by"
+    ),
+    sort_direction: schemas.SortDirection = Query(
+        default=schemas.SortDirection.ASCENDING
+    ),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Get asset type's property names"""
     await crud.raise_if_not_found(db, models.AssetType, id, "Asset Type does not exist")
 
-    if sort_direction == schemas.SortDirection.DESCENDING:
-        sort_by = desc(sort_by)
+    sort_desc = sort_direction == schemas.SortDirection.DESCENDING
+    query = (
+        select(models.AssetPropertyName)
+        .where(models.AssetPropertyName.asset_type_id == id)
+        .order_by(desc(sort_by) if sort_desc else sort_by)
+    )
 
-    query = select(models.AssetPropertyName).where(models.AssetPropertyName.asset_type_id == id).order_by(sort_by)
-    result = await db.scalars(query)
+    return (await db.scalars(query)).all()
 
-    return result.all()
-
-@router.put("/{id}/property-names/{property_name_id}", response_model=schemas.AssetPropertyName)
+#==========================================================================================
+# Update Property Name
+#==========================================================================================
+@router.put(
+    "/{id}/property-names/{property_name_id}",
+    response_model=schemas.AssetPropertyName
+)
 async def update_property_name(
     id: int = Path(description="The asset type ID"),
     property_name_id: int = Path(description="The ID of the property name to update"),
@@ -198,7 +245,13 @@ async def update_property_name(
 
     return await crud.update(db, prop)
 
-@router.delete("/{id}/property-names/{property_name_id}", status_code=status.HTTP_204_NO_CONTENT)
+#==========================================================================================
+# Delete Property Name
+#==========================================================================================
+@router.delete(
+    "/{id}/property-names/{property_name_id}",
+    status_code=status.HTTP_204_NO_CONTENT
+)
 async def delete_property_name(
     id: int = Path(description="The asset type ID"),
     property_name_id: int = Path(description="The ID of the property name to delete"),

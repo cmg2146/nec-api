@@ -6,6 +6,9 @@ from geoalchemy2 import Geometry
 
 from app.database.models import BaseDbModel
 
+#==========================================================================================
+# Overlay Model
+#==========================================================================================
 class Overlay(BaseDbModel):
     """Overlay model
 
@@ -18,7 +21,16 @@ class Overlay(BaseDbModel):
 
     original_filename = Column(String, nullable=True)
     stored_filename = Column(String, nullable=True)
-    extent = Column(Geometry(geometry_type='POLYGON', srid=4326, dimension=2), nullable=False)
+    extent = Column(
+        Geometry(
+            geometry_type='POLYGON',
+            srid=4326,
+            dimension=2
+        ),
+        nullable=False
+    )
+    """The bounding box that defines where the overlay is placed on a map"""
+
     survey_id = Column(Integer, ForeignKey("survey.id"), nullable=False, index=True)
     level = Column(Integer, default=1, nullable=False)
 

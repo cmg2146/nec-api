@@ -23,14 +23,25 @@ router = APIRouter(
 )
 
 #==========================================================================================
-# Floor Overlay Resource Operations
+# Query Overlays
 #==========================================================================================
 @router.get("/", response_model=list[schemas.Overlay])
 async def get_overlays(
-    sort_by: schemas.SortBy = Query(default=schemas.SortBy.CREATED, description="The field to order results by"),
-    sort_direction: schemas.SortDirection = Query(default=schemas.SortDirection.ASCENDING),
-    skip: int = Query(default=0, description="Skip the specified number of items (for pagination)"),
-    limit: int = Query(default=100, description="Max number of results"),
+    sort_by: schemas.SortBy = Query(
+        default=schemas.SortBy.CREATED,
+        description="The field to order results by"
+    ),
+    sort_direction: schemas.SortDirection = Query(
+        default=schemas.SortDirection.ASCENDING
+    ),
+    skip: int = Query(
+        default=0,
+        description="Skip the specified number of items (for pagination)"
+    ),
+    limit: int = Query(
+        default=100,
+        description="Max number of results"
+    ),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query overlays"""
@@ -43,6 +54,9 @@ async def get_overlays(
         sort_desc = sort_direction == schemas.SortDirection.DESCENDING
     )
 
+#==========================================================================================
+# Get Overlay
+#==========================================================================================
 @router.get("/{id}", response_model=schemas.Overlay)
 async def get_overlay(
     id: int = Path(description="The ID of the overlay to get"),
@@ -51,6 +65,9 @@ async def get_overlay(
     """Retrieve an overlay by ID."""
     return await crud.get(db, models.Overlay, id)
 
+#==========================================================================================
+# Get Overlay File
+#==========================================================================================
 @router.get("/{id}/file", response_class=FileResponse)
 async def serve_overlay_file(
     id: int = Path(description="The ID of the overlay to get the image file for"),
@@ -67,6 +84,9 @@ async def serve_overlay_file(
 
     return os.path.join(settings.FILE_UPLOAD_DIR, overlay.stored_filename)
 
+#==========================================================================================
+# Update Overlay File
+#==========================================================================================
 @router.put("/{id}/file")
 async def upload_overlay_file(
     id: int = Path(description="The ID of the overlay to upload the image file for"),
@@ -87,6 +107,9 @@ async def upload_overlay_file(
 
     await crud.update(db, overlay)
 
+#==========================================================================================
+# Update Overlay
+#==========================================================================================
 @router.put("/{id}", response_model=schemas.Overlay)
 async def update_overlay(
     id: int = Path(description="The ID of the overlay to update"),
@@ -103,6 +126,9 @@ async def update_overlay(
 
     return await crud.update(db, overlay)
 
+#==========================================================================================
+# Delete Overlay
+#==========================================================================================
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_overlay(
     id: int = Path(description="The ID of the overlay to delete"),

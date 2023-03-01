@@ -23,14 +23,25 @@ router = APIRouter(
 )
 
 #==========================================================================================
-# Pano Resource Operations
+# Query panos
 #==========================================================================================
 @router.get("/", response_model=list[schemas.Pano])
 async def get_panos(
-    sort_by: schemas.SortByWithName = Query(default=schemas.SortByWithName.NAME, description="The field to order results by"),
-    sort_direction: schemas.SortDirection = Query(default=schemas.SortDirection.ASCENDING),
-    skip: int = Query(default=0, description="Skip the specified number of items (for pagination)"),
-    limit: int = Query(default=100, description="Max number of results"),
+    sort_by: schemas.SortByWithName = Query(
+        default=schemas.SortByWithName.NAME,
+        description="The field to order results by"
+    ),
+    sort_direction: schemas.SortDirection = Query(
+        default=schemas.SortDirection.ASCENDING
+    ),
+    skip: int = Query(
+        default=0,
+        description="Skip the specified number of items (for pagination)"
+    ),
+    limit: int = Query(
+        default=100,
+        description="Max number of results"
+    ),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query panos"""
@@ -43,6 +54,9 @@ async def get_panos(
         sort_desc = sort_direction == schemas.SortDirection.DESCENDING
     )
 
+#==========================================================================================
+# Get pano
+#==========================================================================================
 @router.get("/{id}", response_model=schemas.Pano)
 async def get_pano(
     id: int = Path(description="The ID of the pano to get"),
@@ -51,6 +65,9 @@ async def get_pano(
     """Retrieve a pano by ID."""
     return await crud.get(db, models.Pano, id)
 
+#==========================================================================================
+# Get Pano File
+#==========================================================================================
 @router.get("/{id}/file", response_class=FileResponse)
 async def serve_pano_file(
     id: int = Path(description="The ID of the pano to get the image file for"),
@@ -66,6 +83,9 @@ async def serve_pano_file(
 
     return os.path.join(settings.FILE_UPLOAD_DIR, pano.stored_filename)
 
+#==========================================================================================
+# Upload pano file
+#==========================================================================================
 @router.put("/{id}/file")
 async def upload_pano_file(
     id: int = Path(description="The ID of the pano to upload the image for"),
@@ -87,6 +107,9 @@ async def upload_pano_file(
 
     await crud.update(db, pano)
 
+#==========================================================================================
+# Update pano
+#==========================================================================================
 @router.put("/{id}", response_model=schemas.Pano)
 async def update_pano(
     id: int = Path(description="The ID of the pano to update"),
@@ -103,6 +126,9 @@ async def update_pano(
 
     return await crud.update(db, pano)
 
+#==========================================================================================
+# Delete pano
+#==========================================================================================
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_pano(
     id: int = Path(description="The ID of the pano to delete"),
@@ -114,9 +140,13 @@ async def delete_pano(
 
 
 #==========================================================================================
-# Hotspot Sub-Resource Operations
+# Create Hotspot
 #==========================================================================================
-@router.post("/{id}/hotspots/", status_code=status.HTTP_201_CREATED, response_model=schemas.Hotspot)
+@router.post(
+    "/{id}/hotspots/",
+    status_code=status.HTTP_201_CREATED,
+    response_model=schemas.Hotspot
+)
 async def create_hotspot(
     id: int = Path(description="The ID of the pano to place the hotspot in"),
     data: schemas.HotspotCreate = Body(description="The new hotspot to create"),
@@ -131,24 +161,36 @@ async def create_hotspot(
 
     return await crud.create(db, hotspot)
 
+#==========================================================================================
+# Get Pano's Hotspots
+#==========================================================================================
 @router.get("/{id}/hotspots/", response_model=list[schemas.Hotspot])
 async def get_hotspots(
     id: int = Path(description="The ID of the pano to get hotspots for"),
-    sort_by: schemas.SortBy = Query(default=schemas.SortBy.CREATED, description="The field to order results by"),
-    sort_direction: schemas.SortDirection = Query(default=schemas.SortDirection.ASCENDING),
+    sort_by: schemas.SortBy = Query(
+        default=schemas.SortBy.CREATED,
+        description="The field to order results by"
+    ),
+    sort_direction: schemas.SortDirection = Query(
+        default=schemas.SortDirection.ASCENDING
+    ),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query a pano's hotspots"""
     await crud.raise_if_not_found(db, models.Pano, id, "Pano does not exist")
 
-    if sort_direction == schemas.SortDirection.DESCENDING:
-        sort_by = desc(sort_by)
+    sort_desc = sort_direction == schemas.SortDirection.DESCENDING
+    query = (
+        select(models.Hotspot)
+        .where(models.Hotspot.pano_id == id)
+        .order_by(desc(sort_by) if sort_desc else sort_by)
+    )
 
-    query = select(models.Hotspot).where(models.Hotspot.pano_id == id).order_by(sort_by)
-    result = await db.scalars(query)
+    return (await db.scalars(query)).all()
 
-    return result.all()
-
+#==========================================================================================
+# Update Hotspot
+#==========================================================================================
 @router.put("/{id}/hotspots/{hotspot_id}", response_model=schemas.Hotspot)
 async def update_hotspot(
     id: int = Path(description="Pano ID"),
@@ -177,6 +219,9 @@ async def update_hotspot(
 
     return await crud.update(db, hotspot)
 
+#==========================================================================================
+# Delete Hotspot
+#==========================================================================================
 @router.delete("/{id}/hotspots/{hotspot_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_hotspot(
     id: int = Path(description="Pano ID"),

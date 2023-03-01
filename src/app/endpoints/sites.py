@@ -20,7 +20,7 @@ router = APIRouter(
 )
 
 #==========================================================================================
-# Site Resource Operations
+# Create Site
 #==========================================================================================
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.Site)
 async def create_site(
@@ -34,12 +34,26 @@ async def create_site(
 
     return await crud.create(db, site)
 
+#==========================================================================================
+# Query Sites
+#==========================================================================================
 @router.get("/", response_model=list[schemas.Site])
 async def get_sites(
-    sort_by: schemas.SortByWithName = Query(default=schemas.SortByWithName.NAME, description="The field to order results by"),
-    sort_direction: schemas.SortDirection = Query(default=schemas.SortDirection.ASCENDING),
-    skip: int = Query(default=0, description="Skip the specified number of items (for pagination)"),
-    limit: int = Query(default=100, description="Max number of results"),
+    sort_by: schemas.SortByWithName = Query(
+        default=schemas.SortByWithName.NAME,
+        description="The field to order results by"
+    ),
+    sort_direction: schemas.SortDirection = Query(
+        default=schemas.SortDirection.ASCENDING
+    ),
+    skip: int = Query(
+        default=0,
+        description="Skip the specified number of items (for pagination)"
+    ),
+    limit: int = Query(
+        default=100,
+        description="Max number of results"
+    ),
     db: AsyncSession = Depends(get_db)
 ) -> StreamingResponse:
     """Query sites"""
@@ -52,6 +66,9 @@ async def get_sites(
         sort_desc = sort_direction == schemas.SortDirection.DESCENDING
     )
 
+#==========================================================================================
+# Get Site
+#==========================================================================================
 @router.get("/{id}", response_model=schemas.Site)
 async def get_site(
     id: int = Path(description="The ID of the site to get"),
@@ -60,24 +77,36 @@ async def get_site(
     """Retrieve a site by ID."""
     return await crud.get(db, models.Site, id)
 
+#==========================================================================================
+# Get Sub-Sites
+#==========================================================================================
 @router.get("/{id}/sub-sites", response_model=list[schemas.Site])
 async def get_sub_sites(
     id: int = Path(description="The ID of the site to get sub sites for"),
-    sort_by: schemas.SortByWithName = Query(default=schemas.SortByWithName.NAME, description="The field to order results by"),
-    sort_direction: schemas.SortDirection = Query(default=schemas.SortDirection.ASCENDING),
+    sort_by: schemas.SortByWithName = Query(
+        default=schemas.SortByWithName.NAME,
+        description="The field to order results by"
+    ),
+    sort_direction: schemas.SortDirection = Query(
+        default=schemas.SortDirection.ASCENDING
+    ),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query sub sites"""
     await crud.raise_if_not_found(db, models.Site, id, "Site does not exist")
 
-    if sort_direction == schemas.SortDirection.DESCENDING:
-        sort_by = desc(sort_by)
+    sort_desc = sort_direction == schemas.SortDirection.DESCENDING
+    query = (
+        select(models.Site)
+        .where(models.Site.parent_site_id == id)
+        .order_by(desc(sort_by) if sort_desc else sort_by)
+    )
 
-    query = select(models.Site).where(models.Site.parent_site_id == id).order_by(sort_by)
-    result = await db.scalars(query)
+    return (await db.scalars(query)).all()
 
-    return result.all()
-
+#==========================================================================================
+# Update Site
+#==========================================================================================
 @router.put("/{id}", response_model=schemas.Site)
 async def update_site(
     id: int = Path(description="The ID of the site to update"),
@@ -94,6 +123,9 @@ async def update_site(
 
     return await crud.update(db, site)
 
+#==========================================================================================
+# Delete Site
+#==========================================================================================
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_site(
     id: int = Path(description="The ID of the site to delete"),
@@ -106,9 +138,14 @@ async def delete_site(
 
 
 #==========================================================================================
-# Sub-Resource Operations
+# Create Survey
 #==========================================================================================
-@router.post("/{id}/surveys", tags=["Surveys"], status_code=status.HTTP_201_CREATED, response_model=schemas.Survey)
+@router.post(
+    "/{id}/surveys",
+    tags=["Surveys"],
+    status_code=status.HTTP_201_CREATED,
+    response_model=schemas.Survey
+)
 async def create_survey(
     id: int = Path(description="The ID of the site the survey belongs to"),
     data: schemas.SurveyCreate = Body(description="The new survey to create"),
@@ -123,20 +160,29 @@ async def create_survey(
 
     return await crud.create(db, survey)
 
+#==========================================================================================
+# Get Surveys for Site
+#==========================================================================================
 @router.get("/{id}/surveys", tags=["Surveys"], response_model=list[schemas.Survey])
 async def get_surveys(
     id: int = Path(description="The ID of the site to get surveys for"),
-    sort_by: schemas.SortByWithName = Query(default=schemas.SortByWithName.NAME, description="The field to order results by"),
-    sort_direction: schemas.SortDirection = Query(default=schemas.SortDirection.ASCENDING),
+    sort_by: schemas.SortByWithName = Query(
+        default=schemas.SortByWithName.NAME,
+        description="The field to order results by"
+    ),
+    sort_direction: schemas.SortDirection = Query(
+        default=schemas.SortDirection.ASCENDING
+    ),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query a site's surveys"""
     await crud.raise_if_not_found(db, models.Site, id, "Site does not exist")
 
-    if sort_direction == schemas.SortDirection.DESCENDING:
-        sort_by = desc(sort_by)
+    sort_desc = sort_direction == schemas.SortDirection.DESCENDING
+    query = (
+        select(models.Survey)
+        .where(models.Survey.site_id == id)
+        .order_by(desc(sort_by) if sort_desc else sort_by)
+    )
 
-    query = select(models.Survey).where(models.Survey.site_id == id).order_by(sort_by)
-    result = await db.scalars(query)
-
-    return result.all()
+    return (await db.scalars(query)).all()
