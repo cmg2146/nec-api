@@ -14,37 +14,13 @@ from app.database import models
 from app.dependencies import get_db
 from app.settings import settings
 from app.schemas.panos import MAX_PANO_FILE_SIZE_BYTES
+from app.endpoints.helpers import crud
 
 router = APIRouter(
     prefix="/panos",
     tags=["Panos"],
     responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}}
 )
-
-async def _get(
-    id: int,
-    db: AsyncSession
-) -> models.Pano:
-    pano = await db.get(models.Pano, id)
-    if not pano:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Pano not found"
-        )
-
-    return pano
-
-async def _raise_404_if_not_found(
-    id: int,
-    db: AsyncSession
-):
-    query = select(models.Pano.id).where(models.Pano.id == id)
-    pano = await db.scalar(query)
-    if not pano:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Pano not found"
-        )
 
 #==========================================================================================
 # Pano Resource Operations
@@ -72,7 +48,7 @@ async def get_pano(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Retrieve a pano by ID."""
-    return await _get(id, db)
+    return await crud.get(db, models.Pano, id)
 
 @router.get("/{id}/file", response_class=FileResponse)
 async def serve_pano_file(
@@ -80,7 +56,7 @@ async def serve_pano_file(
     db: AsyncSession = Depends(get_db)
 ):
     """Serve the actual pano image file"""
-    pano = await _get(id, db)
+    pano = await crud.get(db, models.Pano, id)
     if not pano.stored_filename:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -96,7 +72,7 @@ async def upload_pano_file(
     db: AsyncSession = Depends(get_db)
 ):
     """Upload/update the actual image file for a pano record"""
-    pano = await _get(id, db)
+    pano = await crud.get(db, models.Pano, id)
 
     utils.validate_file_extension(file, True, ".jpg", ".jpeg", ".png")
     # TODO: validate aspect ratio is 2:1
@@ -118,7 +94,7 @@ async def update_pano(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Update a pano."""
-    pano = await _get(id, db)
+    pano = await crud.get(db, models.Pano, id)
 
     dataDict = data.dict(exclude_unset=True)
     dataDict['coordinates'] = data.coordinates.to_wkt()
@@ -139,7 +115,7 @@ async def delete_pano(
     db: AsyncSession = Depends(get_db)
 ) -> None:
     """Delete a pano by ID"""
-    pano = await _get(id, db)
+    pano = await crud.get(db, models.Pano, id)
 
     # TODO: Need to delete all of this panos hotspots and any hotspot that links to this pano
     await db.delete(pano)
@@ -156,7 +132,7 @@ async def create_hotspot(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Create a new hotspot"""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.Pano, id, "Pano does not exist")
 
     dataDict = data.dict()
     dataDict['pano_id'] = id
@@ -177,7 +153,7 @@ async def get_hotspots(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query a pano's hotspots"""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.Pano, id, "Pano does not exist")
 
     if sort_direction == schemas.SortDirection.DESCENDING:
         sort_by = desc(sort_by)
@@ -195,7 +171,7 @@ async def update_hotspot(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Update a hotspot."""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.Pano, id, "Pano does not exist")
 
     #check if hotspot exists first
     query = select(models.Hotspot).where(
@@ -227,7 +203,7 @@ async def delete_hotspot(
     db: AsyncSession = Depends(get_db)
 ) -> None:
     """Delete a hotspot by ID"""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.Pano, id, "Pano does not exist")
 
     query = select(models.Hotspot).where(
         models.Hotspot.id == hotspot_id &

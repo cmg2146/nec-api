@@ -14,25 +14,13 @@ from app import schemas
 from app.dependencies import get_db
 from app.settings import settings
 from app.schemas.overlays import MAX_OVERLAY_SIZE_BYTES, MAX_OVERLAY_SIZE_BYTES_SVG
+from app.endpoints.helpers import crud
 
 router = APIRouter(
     prefix="/overlays",
     tags=["Overlays"],
     responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}}
 )
-
-async def _get(
-    id: int,
-    db: AsyncSession
-) -> models.Overlay:
-    overlay = await db.get(models.Overlay, id)
-    if not overlay:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Overlay not found"
-        )
-
-    return overlay
 
 #==========================================================================================
 # Floor Overlay Resource Operations
@@ -60,7 +48,7 @@ async def get_overlay(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Retrieve an overlay by ID."""
-    return await _get(id, db)
+    return await crud.get(db, models.Overlay, id)
 
 @router.get("/{id}/file", response_class=FileResponse)
 async def serve_overlay_file(
@@ -68,7 +56,7 @@ async def serve_overlay_file(
     db: AsyncSession = Depends(get_db)
 ):
     """Serve the actual overlay image file"""
-    overlay = await _get(id, db)
+    overlay = await crud.get(db, models.Overlay, id)
 
     if not overlay.stored_filename:
         raise HTTPException(
@@ -85,7 +73,7 @@ async def upload_overlay_file(
     db: AsyncSession = Depends(get_db)
 ):
     """Upload/update the actual overlay image file"""
-    overlay = await _get(id, db)
+    overlay = await crud.get(db, models.Overlay, id)
 
     extension = utils.validate_file_extension(file, True, ".jpg", ".jpeg", ".png", ".svg")
     new_file_path = await utils.store_uploaded_file(
@@ -106,7 +94,7 @@ async def update_overlay(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Update an overlay."""
-    overlay = await _get(id, db)
+    overlay = await crud.get(db, models.Overlay, id)
 
     dataDict = data.dict(exclude_unset=True)
     dataDict['extent'] = data.extent.to_wkt()
@@ -127,6 +115,6 @@ async def delete_overlay(
     db: AsyncSession = Depends(get_db)
 ) -> None:
     """Delete an overlay by ID"""
-    overlay = await _get(id, db)
+    overlay = await crud.get(db, models.Overlay, id)
     await db.delete(overlay)
     await db.commit()

@@ -14,25 +14,13 @@ from app.database import models
 from app.dependencies import get_db
 from app.settings import settings
 from app.schemas.photos import MAX_PHOTO_FILE_SIZE_BYTES
+from app.endpoints.helpers import crud
 
 router = APIRouter(
     prefix="/photos",
     tags=["Photos"],
     responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}}
 )
-
-async def _get(
-    id: int,
-    db: AsyncSession
-) -> models.Photo:
-    photo = await db.get(models.Photo, id)
-    if not photo:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Photo not found"
-        )
-
-    return photo
 
 #==========================================================================================
 # Photo Resource Operations
@@ -60,7 +48,7 @@ async def get_photo(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Retrieve a photo by ID."""
-    return await _get(id, db)
+    return await crud.get(db, models.Photo, id)
 
 @router.get("/{id}/file", response_class=FileResponse)
 async def serve_photo_file(
@@ -68,7 +56,7 @@ async def serve_photo_file(
     db: AsyncSession = Depends(get_db)
 ):
     """Serve the actual photo file"""
-    photo = await _get(id, db)
+    photo = await crud.get(db, models.Photo, id)
     if not photo.stored_filename:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -84,7 +72,7 @@ async def upload_photo_file(
     db: AsyncSession = Depends(get_db)
 ):
     """Upload/update the actual image file for a photo record"""
-    photo = await _get(id, db)
+    photo = await crud.get(db, models.Photo, id)
 
     utils.validate_file_extension(file, True, ".jpg", ".jpeg", ".png")
     new_file_path = await utils.store_uploaded_file(
@@ -105,7 +93,7 @@ async def update_photo(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Update a photo."""
-    photo = await _get(id, db)
+    photo = await crud.get(db, models.Photo, id)
 
     dataDict = data.dict(exclude_unset=True)
     dataDict['coordinates'] = data.coordinates.to_wkt()
@@ -126,6 +114,6 @@ async def delete_photo(
     db: AsyncSession = Depends(get_db)
 ) -> None:
     """Delete a photo by ID"""
-    photo = await _get(id, db)
+    photo = await crud.get(db, models.Photo, id)
     await db.delete(photo)
     await db.commit()

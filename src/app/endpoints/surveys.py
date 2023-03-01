@@ -9,37 +9,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import models
 from app import schemas
 from app.dependencies import get_db
+from app.endpoints.helpers import crud
 
 router = APIRouter(
     prefix="/surveys",
     tags=["Surveys"],
     responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}}
 )
-
-async def _get(
-    id: int,
-    db: AsyncSession
-) -> models.Survey:
-    survey = await db.get(models.Survey, id)
-    if not survey:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Survey not found"
-        )
-
-    return survey
-
-async def _raise_404_if_not_found(
-    id: int,
-    db: AsyncSession
-):
-    query = select(models.Survey.id).where(models.Survey.id == id)
-    survey = await db.scalar(query)
-    if not survey:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Survey not found"
-        )
 
 #==========================================================================================
 # Survey Resource Operations
@@ -67,7 +43,7 @@ async def get_survey(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Retrieve a survey by ID."""
-    return await _get(id, db)
+    return await crud.get(db, models.Survey, id)
 
 @router.put("/{id}", response_model=schemas.Survey)
 async def update_survey(
@@ -76,7 +52,7 @@ async def update_survey(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Update a survey."""
-    survey = await _get(id, db)
+    survey = await crud.get(db, models.Survey, id)
 
     dataDict = data.dict(exclude_unset=True)
     dataDict['modified'] = datetime.utcnow()
@@ -96,7 +72,7 @@ async def delete_survey(
     db: AsyncSession = Depends(get_db)
 ) -> None:
     """Delete a survey by ID"""
-    survey = await _get(id, db)
+    survey = await crud.get(db, models.Survey, id)
     await db.delete(survey)
     await db.commit()
 
@@ -111,7 +87,7 @@ async def create_overlay(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Create a new overlay"""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.Survey, id, "Survey does not exist")
 
     dataDict = data.dict()
     dataDict['survey_id'] = id
@@ -134,7 +110,7 @@ async def get_overlays(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query a survey's overlays"""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.Survey, id, "Survey does not exist")
 
     if sort_direction == schemas.SortDirection.DESCENDING:
         sort_by = desc(sort_by)
@@ -158,7 +134,7 @@ async def create_asset(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Create a new asset"""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.Survey, id, "Survey does not exist")
 
     dataDict = data.dict()
     dataDict['survey_id'] = id
@@ -181,7 +157,7 @@ async def get_assets(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query a survey's assets"""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.Survey, id, "Survey does not exist")
 
     if sort_direction == schemas.SortDirection.DESCENDING:
         sort_by = desc(sort_by)
@@ -205,7 +181,7 @@ async def create_pano(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Create a new pano"""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.Survey, id, "Survey does not exist")
 
     dataDict = data.dict()
     dataDict['survey_id'] = id
@@ -228,7 +204,7 @@ async def get_panos(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query a survey's panos"""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.Survey, id, "Survey does not exist")
 
     if sort_direction == schemas.SortDirection.DESCENDING:
         sort_by = desc(sort_by)
@@ -252,7 +228,7 @@ async def create_photo(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Create a new photo"""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.Survey, id, "Survey does not exist")
 
     dataDict = data.dict()
     dataDict['survey_id'] = id
@@ -275,7 +251,7 @@ async def get_photos(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query a survey's photos"""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.Survey, id, "Survey does not exist")
 
     if sort_direction == schemas.SortDirection.DESCENDING:
         sort_by = desc(sort_by)

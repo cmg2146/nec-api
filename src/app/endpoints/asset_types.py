@@ -14,37 +14,13 @@ from app.database import models
 from app.dependencies import get_db
 from app.settings import settings
 from app.schemas.assets import MAX_ICON_FILE_SIZE_BYTES
+from app.endpoints.helpers import crud
 
 router = APIRouter(
     prefix="/asset-types",
     tags=["Asset Types"],
     responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}}
 )
-
-async def _get(
-    id: int,
-    db: AsyncSession
-) -> models.AssetType:
-    asset_type = await db.get(models.AssetType, id)
-    if not asset_type:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Asset Type not found"
-        )
-
-    return asset_type
-
-async def _raise_404_if_not_found(
-    id: int,
-    db: AsyncSession
-):
-    query = select(models.AssetType.id).where(models.AssetType.id == id)
-    asset_type = await db.scalar(query)
-    if not asset_type:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Asset Type not found"
-        )
 
 #==========================================================================================
 # Asset Type Resource Operations
@@ -88,7 +64,7 @@ async def get_asset_type(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Retrieve an asset type by ID."""
-    return await _get(id, db)
+    return await crud.get(db, models.AssetType, id)
 
 @router.get("/{id}/icon", response_class=FileResponse)
 async def serve_asset_type_icon_file(
@@ -96,7 +72,7 @@ async def serve_asset_type_icon_file(
     db: AsyncSession = Depends(get_db)
 ):
     """Serve the actual icon file"""
-    asset_type = await _get(id, db)
+    asset_type = await crud.get(db, models.AssetType, id)
     if not asset_type.stored_icon_filename:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -112,7 +88,7 @@ async def upload_asset_type_icon_file(
     db: AsyncSession = Depends(get_db)
 ):
     """Upload/update asset type icon file"""
-    asset_type = await _get(id, db)
+    asset_type = await crud.get(db, models.AssetType, id)
 
     utils.validate_file_extension(file, True, ".jpg", ".jpeg", ".png", ".svg")
     new_file_path = await utils.store_uploaded_file(
@@ -133,7 +109,7 @@ async def update_asset_type(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Update an asset type."""
-    asset_type = await _get(id, db)
+    asset_type = await crud.get(db, models.AssetType, id)
 
     dataDict = data.dict(exclude_unset=True)
     dataDict['modified'] = datetime.utcnow()
@@ -153,7 +129,7 @@ async def delete_asset_type(
     db: AsyncSession = Depends(get_db)
 ) -> None:
     """Delete an asset type by ID"""
-    asset_type = await _get(id, db)
+    asset_type = await crud.get(db, models.AssetType, id)
 
     # Dont allow delete if there are assets of this type
     query = select(models.Asset.id).where(models.Asset.asset_type_id == id)
@@ -178,7 +154,7 @@ async def create_property_name(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Add a new property name to the asset type"""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.AssetType, id, "Asset Type does not exist")
 
     dataDict = data.dict()
     dataDict['asset_type_id'] = id
@@ -199,7 +175,7 @@ async def get_property_names(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Get asset type's property names"""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.AssetType, id, "Asset Type does not exist")
 
     if sort_direction == schemas.SortDirection.DESCENDING:
         sort_by = desc(sort_by)
@@ -217,7 +193,7 @@ async def update_property_name(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Update asset property name"""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.AssetType, id, "Asset Type does not exist")
 
     #check if prop name exists first
     query = select(models.AssetPropertyName).where(

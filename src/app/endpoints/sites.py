@@ -11,37 +11,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import models
 from app import schemas
 from app.dependencies import get_db
+from app.endpoints.helpers import crud
 
 router = APIRouter(
     prefix="/sites",
     tags=["Sites"],
     responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}}
 )
-
-async def _get(
-    id: int,
-    db: AsyncSession
-) -> models.Site:
-    site = await db.get(models.Site, id)
-    if not site:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Site not found"
-        )
-
-    return site
-
-async def _raise_404_if_not_found(
-    id: int,
-    db: AsyncSession
-):
-    query = select(models.Site.id).where(models.Site.id == id)
-    site = await db.scalar(query)
-    if not site:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Site not found"
-        )
 
 #==========================================================================================
 # Site Resource Operations
@@ -86,7 +62,7 @@ async def get_site(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Retrieve a site by ID."""
-    return await _get(id, db)
+    return await crud.get(db, models.Site, id)
 
 @router.get("/{id}/sub-sites", response_model=list[schemas.Site])
 async def get_sub_sites(
@@ -96,7 +72,7 @@ async def get_sub_sites(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query sub sites"""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.Site, id, "Site does not exist")
 
     if sort_direction == schemas.SortDirection.DESCENDING:
         sort_by = desc(sort_by)
@@ -113,7 +89,7 @@ async def update_site(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Update a site."""
-    site = await _get(id, db)
+    site = await crud.get(db, models.Site, id)
 
     dataDict = data.dict(exclude_unset=True)
     dataDict['coordinates'] = data.coordinates.to_wkt()
@@ -134,7 +110,7 @@ async def delete_site(
     db: AsyncSession = Depends(get_db)
 ) -> None:
     """Delete a site by ID"""
-    site = await _get(id, db)
+    site = await crud.get(db, models.Site, id)
 
     # TODO: Need to delete all sub-sites too. appears like default SQLAlchemy behavior
     # sets the foreign key to null.
@@ -152,7 +128,7 @@ async def create_survey(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Create a new survey"""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.Site, id, "Site does not exist")
 
     dataDict = data.dict()
     dataDict['site_id'] = id
@@ -173,7 +149,7 @@ async def get_surveys(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query a site's surveys"""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.Site, id, "Site does not exist")
 
     if sort_direction == schemas.SortDirection.DESCENDING:
         sort_by = desc(sort_by)

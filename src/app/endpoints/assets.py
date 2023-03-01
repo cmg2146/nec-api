@@ -9,37 +9,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import models
 from app import schemas
 from app.dependencies import get_db
+from app.endpoints.helpers import crud
 
 router = APIRouter(
     prefix="/assets",
     tags=["Assets"],
     responses={status.HTTP_404_NOT_FOUND: {"description": "Not found"}}
 )
-
-async def _get(
-    id: int,
-    db: AsyncSession
-) -> models.Asset:
-    asset = await db.get(models.Asset, id)
-    if not asset:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Asset not found"
-        )
-
-    return asset
-
-async def _raise_404_if_not_found(
-    id: int,
-    db: AsyncSession
-):
-    query = select(models.Asset.id).where(models.Asset.id == id)
-    asset = await db.scalar(query)
-    if not asset:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Asset not found"
-        )
 
 #==========================================================================================
 # Asset Resource Operations
@@ -67,7 +43,7 @@ async def get_asset(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Retrieve an asset by ID."""
-    return await _get(id, db)
+    return await crud.get(db, models.Asset, id)
 
 @router.put("/{id}", response_model=schemas.Asset)
 async def update_asset(
@@ -76,7 +52,7 @@ async def update_asset(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Update an asset."""
-    asset = await _get(id, db)
+    asset = await crud.get(db, models.Asset, id)
 
     dataDict = data.dict(exclude_unset=True)
     dataDict['coordinates'] = data.coordinates.to_wkt()
@@ -97,7 +73,7 @@ async def delete_asset(
     db: AsyncSession = Depends(get_db)
 ) -> None:
     """Delete an asset by ID"""
-    asset = await _get(id, db)
+    asset = await crud.get(db, models.Asset, id)
     await db.delete(asset)
     await db.commit()
 
@@ -112,7 +88,7 @@ async def create_property(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Add a new property to the asset"""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.Asset, id, "Asset does not exist")
 
     dataDict = data.dict()
     dataDict['asset_id'] = id
@@ -133,7 +109,7 @@ async def get_properties(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Get asset's properties"""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.Asset, id, "Asset does not exist")
 
     if sort_direction == schemas.SortDirection.DESCENDING:
         sort_by = desc(sort_by)
@@ -151,7 +127,7 @@ async def update_property(
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Update an asset property"""
-    await _raise_404_if_not_found(id, db)
+    await crud.raise_if_not_found(db, models.Asset, id, "Asset does not exist")
 
     #check if prop exists first
     query = select(models.AssetProperty).where(

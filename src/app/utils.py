@@ -81,7 +81,7 @@ async def store_uploaded_file(
     If max_size_bytes is not None, an exception will be raised if the file exceeds
     the limit.
 
-    Returns the path to the stored file
+    Returns the path to the stored file.
     """
     file_name = generate_random_filename(file.filename)
     file_path = os.path.join(directory, file_name)
