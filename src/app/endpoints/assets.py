@@ -170,4 +170,26 @@ async def update_property(
 
     return await crud.update(db, prop)
 
-# TODO: endpoint to delete property
+#==========================================================================================
+# Update Asset Property
+#==========================================================================================
+@router.delete("/{id}/properties/{property_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_asset_property(
+    id: int = Path(description="Asset ID"),
+    property_id: int = Path("ID of the asset property to delete"),
+    db: AsyncSession = Depends(get_db)
+):
+    await crud.raise_if_not_found(db, models.Asset, id, "Asset does not exist")
+
+    query = select(models.AssetProperty).where(
+        models.AssetProperty.id == property_id &
+        models.AssetProperty.asset_id == id
+    )
+    prop = await db.scalar(query)
+    if not prop:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Property not found"
+        )
+
+    await crud.delete(db, prop)
