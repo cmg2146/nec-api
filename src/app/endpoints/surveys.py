@@ -54,7 +54,7 @@ async def get_surveys(
     sort_desc = sort_direction == schemas.SortDirection.DESCENDING
     query = select(models.Survey).order_by(desc(sort_by) if sort_desc else sort_by)
     if search:
-        query = query.where(models.Survey.name.ilike(f'%{search}%'))
+        query = query.where(models.Survey.name.icontains(search, autoescape=True))
     if site_id:
         query = query.where(models.Survey.site_id == site_id)
     if skip:
@@ -268,7 +268,7 @@ async def get_assets(
         .order_by(desc(sort_by) if sort_desc else sort_by)
     )
     if search:
-        query = query.where(models.Asset.name.ilike(f'%{search}%'))
+        query = query.where(models.Asset.name.icontains(search, autoescape=True))
     if level is not None:
         query = query.where(models.Asset.level == level)
     if asset_type_id:
@@ -351,7 +351,7 @@ async def get_panos(
         .order_by(desc(sort_by) if sort_desc else sort_by)
     )
     if search:
-        query = query.where(models.Pano.name.ilike(f'%{search}%'))
+        query = query.where(models.Pano.name.icontains(search, autoescape=True))
     if level is not None:
         query = query.where(models.Pano.level == level)
     if skip:
@@ -433,7 +433,7 @@ async def get_photos(
         .order_by(desc(sort_by) if sort_desc else sort_by)
     )
     if search:
-        query = query.where(models.Photo.name.ilike(f'%{search}%'))
+        query = query.where(models.Photo.name.icontains(search, autoescape=True))
     if level is not None:
         query = query.where(models.Photo.level == level)
     if skip:

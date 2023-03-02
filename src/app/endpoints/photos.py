@@ -58,7 +58,7 @@ async def get_photos(
     sort_desc = sort_direction == schemas.SortDirection.DESCENDING
     query = select(models.Photo).order_by(desc(sort_by) if sort_desc else sort_by)
     if search:
-        query = query.where(models.Photo.name.ilike(f'%{search}%'))
+        query = query.where(models.Photo.name.icontains(search, autoescape=True))
     if site_id:
         query = query.join(models.Survey).where(models.Survey.site_id == site_id)
     if skip:

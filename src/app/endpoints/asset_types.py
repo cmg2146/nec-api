@@ -71,8 +71,8 @@ async def get_asset_types(
     query = select(models.AssetType).order_by(desc(sort_by) if sort_desc else sort_by)
     if search:
         query = query.where(
-            models.AssetType.name.ilike(f'%{search}%') |
-            models.AssetType.category.ilike(f'%{search}%')
+            models.AssetType.name.icontains(search, autoescape=True) |
+            models.AssetType.category.icontains(search, autoescape=True)
         )
     if skip:
         query = query.offset(skip)

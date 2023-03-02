@@ -57,7 +57,7 @@ async def get_assets(
     sort_desc = sort_direction == schemas.SortDirection.DESCENDING
     query = select(models.Asset).order_by(desc(sort_by) if sort_desc else sort_by)
     if search:
-        query = query.where(models.Asset.name.ilike(f'%{search}%'))
+        query = query.where(models.Asset.name.icontains(search, autoescape=True))
     if site_id:
         query = query.join(models.Survey).where(models.Survey.site_id == site_id)
     if asset_type_id:

@@ -58,7 +58,7 @@ async def get_panos(
     sort_desc = sort_direction == schemas.SortDirection.DESCENDING
     query = select(models.Pano).order_by(desc(sort_by) if sort_desc else sort_by)
     if search:
-        query = query.where(models.Pano.name.ilike(f'%{search}%'))
+        query = query.where(models.Pano.name.icontains(search, autoescape=True))
     if site_id:
         query = query.join(models.Survey).where(models.Survey.site_id == site_id)
     if skip:

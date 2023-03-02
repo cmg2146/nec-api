@@ -78,7 +78,7 @@ async def get_sites(
     sort_desc = sort_direction == schemas.SortDirection.DESCENDING
     query = select(models.Site).order_by(desc(sort_by) if sort_desc else sort_by)
     if search:
-        query = query.where(models.Site.name.ilike(f'%{search}%'))
+        query = query.where(models.Site.name.icontains(search, autoescape=True))
     if skip:
         query = query.offset(skip)
     if limit:
