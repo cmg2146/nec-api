@@ -34,11 +34,10 @@ async def create_site(
 
     # dont allow more than two levels of sites
     if data.parent_site_id:
-        grandparent_query = (
+        grandparent_site_id = await db.scalar(
             select(models.Site.parent_site_id)
             .where(models.Site.id == data.parent_site_id)
         )
-        grandparent_site_id = await db.scalar(grandparent_query)
         if grandparent_site_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -147,7 +146,7 @@ async def delete_site(
     """Delete a site by ID"""
     site = await crud.get(db, models.Site, id)
 
-    survey_query= (
+    any_survey = await db.scalar(
         select(models.Survey.id)
         .join(models.Site)
         .where(
@@ -156,7 +155,6 @@ async def delete_site(
             (models.Site.id == id)
         )
     )
-    any_survey = await db.scalar(survey_query)
     if any_survey:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

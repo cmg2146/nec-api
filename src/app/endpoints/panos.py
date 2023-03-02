@@ -201,11 +201,13 @@ async def update_hotspot(
     await crud.raise_if_not_found(db, models.Pano, id, "Pano does not exist")
 
     #check if hotspot exists first
-    query = select(models.Hotspot).where(
-        (models.Hotspot.id == hotspot_id) &
-        (models.Hotspot.pano_id == id)
+    hotspot = await db.scalar(
+        select(models.Hotspot)
+        .where(
+            (models.Hotspot.id == hotspot_id) &
+            (models.Hotspot.pano_id == id)
+        )
     )
-    hotspot = await db.scalar(query)
     if not hotspot:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -230,11 +232,13 @@ async def delete_hotspot(
     """Delete a hotspot by ID"""
     await crud.raise_if_not_found(db, models.Pano, id, "Pano does not exist")
 
-    query = select(models.Hotspot).where(
-        (models.Hotspot.id == hotspot_id) &
-        (models.Hotspot.pano_id == id)
+    hotspot = await db.scalar(
+        select(models.Hotspot)
+        .where(
+            (models.Hotspot.id == hotspot_id) &
+            (models.Hotspot.pano_id == id)
+        )
     )
-    hotspot = await db.scalar(query)
     if not hotspot:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

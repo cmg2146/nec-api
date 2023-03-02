@@ -153,11 +153,13 @@ async def update_property(
     await crud.raise_if_not_found(db, models.Asset, id, "Asset does not exist")
 
     #check if prop exists first
-    query = select(models.AssetProperty).where(
-        (models.AssetProperty.id == property_id) &
-        (models.AssetProperty.asset_id == id)
+    prop = await db.scalar(
+        select(models.AssetProperty)
+        .where(
+            (models.AssetProperty.id == property_id) &
+            (models.AssetProperty.asset_id == id)
+        )
     )
-    prop = await db.scalar(query)
     if not prop:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -181,11 +183,13 @@ async def delete_asset_property(
 ):
     await crud.raise_if_not_found(db, models.Asset, id, "Asset does not exist")
 
-    query = select(models.AssetProperty).where(
-        (models.AssetProperty.id == property_id) &
-        (models.AssetProperty.asset_id == id)
+    prop = await db.scalar(
+        select(models.AssetProperty)
+        .where(
+            (models.AssetProperty.id == property_id) &
+            (models.AssetProperty.asset_id == id)
+        )
     )
-    prop = await db.scalar(query)
     if not prop:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

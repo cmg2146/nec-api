@@ -152,9 +152,11 @@ async def delete_asset_type(
     asset_type = await crud.get(db, models.AssetType, id)
 
     # Dont allow delete if there are assets of this type
-    query = select(models.Asset.id).where(models.Asset.asset_type_id == id)
-    asset = await db.scalar(query)
-    if asset:
+    any_asset = await db.scalar(
+        select(models.Asset.id)
+        .where(models.Asset.asset_type_id == id)
+    )
+    if any_asset:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Cannot delete asset type because there are associated assets"
@@ -228,11 +230,13 @@ async def update_property_name(
     await crud.raise_if_not_found(db, models.AssetType, id, "Asset Type does not exist")
 
     #check if prop name exists first
-    query = select(models.AssetPropertyName).where(
-        (models.AssetPropertyName.id == property_name_id) &
-        (models.AssetPropertyName.asset_type_id == id)
+    prop = await db.scalar(
+        select(models.AssetPropertyName)
+        .where(
+            (models.AssetPropertyName.id == property_name_id) &
+            (models.AssetPropertyName.asset_type_id == id)
+        )
     )
-    prop = await db.scalar(query)
     if not prop:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -261,11 +265,13 @@ async def delete_property_name(
     await crud.raise_if_not_found(db, models.AssetType, id, "Asset Type does not exist")
 
     #check if prop name exists first
-    query = select(models.AssetPropertyName).where(
-        (models.AssetPropertyName.id == property_name_id) &
-        (models.AssetPropertyName.asset_type_id == id)
+    prop = await db.scalar(
+        select(models.AssetPropertyName)
+        .where(
+            (models.AssetPropertyName.id == property_name_id) &
+            (models.AssetPropertyName.asset_type_id == id)
+        )
     )
-    prop = await db.scalar(query)
     if not prop:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
