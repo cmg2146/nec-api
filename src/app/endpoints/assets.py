@@ -154,8 +154,8 @@ async def update_property(
 
     #check if prop exists first
     query = select(models.AssetProperty).where(
-        models.AssetProperty.id == property_id &
-        models.AssetProperty.asset_id == id
+        (models.AssetProperty.id == property_id) &
+        (models.AssetProperty.asset_id == id)
     )
     prop = await db.scalar(query)
     if not prop:
@@ -182,8 +182,8 @@ async def delete_asset_property(
     await crud.raise_if_not_found(db, models.Asset, id, "Asset does not exist")
 
     query = select(models.AssetProperty).where(
-        models.AssetProperty.id == property_id &
-        models.AssetProperty.asset_id == id
+        (models.AssetProperty.id == property_id) &
+        (models.AssetProperty.asset_id == id)
     )
     prop = await db.scalar(query)
     if not prop:

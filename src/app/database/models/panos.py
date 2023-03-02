@@ -73,6 +73,8 @@ class Pano(BaseDbModel):
         "Hotspot",
         foreign_keys="Hotspot.pano_id",
         back_populates="pano",
+        cascade="save-update, merge, delete, delete-orphan",
+        passive_deletes=True,
         lazy="raise"
     )
     """The hotspots visible in this pano."""
@@ -81,6 +83,8 @@ class Pano(BaseDbModel):
         "Hotspot",
         foreign_keys="Hotspot.destination_pano_id",
         back_populates="destination_pano",
+        cascade="save-update, merge, delete, delete-orphan",
+        passive_deletes=True,
         lazy="raise"
     )
     """The hotspots that have this pano as the destination pano."""
@@ -106,13 +110,28 @@ class Hotspot(BaseDbModel):
     """
     __tablename__ = "hotspot"
 
-    pano_id = Column(Integer, ForeignKey("pano.id"), nullable=False, index=True)
+    pano_id = Column(
+        Integer,
+        ForeignKey("pano.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
     """The ID of the pano this hotspot is visible in."""
 
-    asset_id = Column(Integer, ForeignKey("asset.id"), nullable=True, index=True)
+    asset_id = Column(
+        Integer,
+        ForeignKey("asset.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True
+    )
     """The ID of the asset this hotspot references."""
 
-    destination_pano_id = Column(Integer, ForeignKey("pano.id"), nullable=True, index=True)
+    destination_pano_id = Column(
+        Integer,
+        ForeignKey("pano.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True
+    )
     """The ID of the pano this hotspot links to."""
 
     # NOTE: if we had 3 dimensional data for all assets and panos (and image processing),

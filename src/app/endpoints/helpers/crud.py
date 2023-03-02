@@ -114,37 +114,28 @@ async def update(
 
 async def delete(
     db: AsyncSession,
-    model_type: Type[TModelType],
-    id: int,
+    model_or_type: Type[TModelType] | TModelType,
+    id: int | None = None,
 ):
     """Deletes a record from the database with the specified type and id.
 
     Parameters:
         db: AsyncSession
             The SQLAlchemy database session.
-        model_type: Type[BaseDbModel]
-            The entity type to retrieve. Must be type of BaseDbModel.
-        id: int
-            The id of the record to check.
+        model_or_type: Type[BaseDbModel] | BaseDbModel
+            The entity type or actual entity to delete. Must be type of BaseDbModel
+            or instance of BaseDbModel.
+        id: int | None
+            The id of the record to delete. If id is None, model_or_type will be
+            assumed to be an instance, if not None, model_or_type is assumed to
+            be a type.
     """
-    item = await get(db, model_type, id)
+    if id is not None:
+        item = await get(db, model_or_type, id)
+    else:
+        item = model_or_type
 
     await db.delete(item)
-    await db.commit()
-
-async def delete(
-    db: AsyncSession,
-    model: TModelType
-):
-    """Deletes a record from the database.
-
-    Parameters:
-        db: AsyncSession
-            The SQLAlchemy database session.
-        model: BaseDbModel
-            The entity to update. Must be instance of BaseDbModel.
-    """
-    await db.delete(model)
     await db.commit()
 
 async def raise_if_not_found(

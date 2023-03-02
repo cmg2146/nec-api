@@ -229,8 +229,8 @@ async def update_property_name(
 
     #check if prop name exists first
     query = select(models.AssetPropertyName).where(
-        models.AssetPropertyName.id == property_name_id &
-        models.AssetPropertyName.asset_type_id == id
+        (models.AssetPropertyName.id == property_name_id) &
+        (models.AssetPropertyName.asset_type_id == id)
     )
     prop = await db.scalar(query)
     if not prop:
@@ -262,8 +262,8 @@ async def delete_property_name(
 
     #check if prop name exists first
     query = select(models.AssetPropertyName).where(
-        models.AssetPropertyName.id == property_name_id &
-        models.AssetPropertyName.asset_type_id == id
+        (models.AssetPropertyName.id == property_name_id) &
+        (models.AssetPropertyName.asset_type_id == id)
     )
     prop = await db.scalar(query)
     if not prop:

@@ -32,6 +32,19 @@ async def create_site(
     dataDict['coordinates'] = data.coordinates.to_wkt()
     site = models.Site(**dataDict)
 
+    # dont allow more than two levels of sites
+    if data.parent_site_id:
+        grandparent_query = (
+            select(models.Site.parent_site_id)
+            .where(models.Site.id == data.parent_site_id)
+        )
+        grandparent_site_id = await db.scalar(grandparent_query)
+        if grandparent_site_id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Site exceeds maximum number of 2 hierarchy levels"
+            )
+
     return await crud.create(db, site)
 
 #==========================================================================================
@@ -132,10 +145,25 @@ async def delete_site(
     db: AsyncSession = Depends(get_db)
 ) -> None:
     """Delete a site by ID"""
-    # TODO: Need to delete all sub-sites too. appears like default SQLAlchemy behavior
-    # sets the foreign key to null.
-    await crud.delete(db, models.Site, id)
+    site = await crud.get(db, models.Site, id)
 
+    survey_query= (
+        select(models.Survey.id)
+        .join(models.Site)
+        .where(
+            # assumes max 2 level site hierarchy
+            (models.Site.parent_site_id == id) |
+            (models.Site.id == id)
+        )
+    )
+    any_survey = await db.scalar(survey_query)
+    if any_survey:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cannot delete site because it has associated surveys"
+        )
+
+    await crud.delete(db, site)
 
 #==========================================================================================
 # Create Survey

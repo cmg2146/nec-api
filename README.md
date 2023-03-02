@@ -66,7 +66,4 @@ TODO:
 * add spatial queries
 * get rid of db parameter to all crud functions
 * Figure out how to use shapely types in pydantic model
-* verify/add logic for related entities.
-* Go through TODOs in code
-* handle cascades/ deletions on related entities
 * replace filesystem for uploads with azurite

@@ -4,6 +4,7 @@ from datetime import datetime
 
 from fastapi import APIRouter, Body, Path, Query, Depends, status, HTTPException
 from sqlalchemy import select, desc
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import models
@@ -86,8 +87,26 @@ async def delete_survey(
     id: int = Path(description="The ID of the survey to delete"),
     db: AsyncSession = Depends(get_db)
 ) -> None:
-    """Delete a survey by ID"""
-    await crud.delete(db, models.Survey, id)
+    """Delete a survey by ID.
+
+    WARNING: As expected, this will also delete all survey data like assets, photos, etc.!!
+    """
+    # need to eager load related entities because CASCADE is not set on database foreign
+    # keys and lazy loading is set to 'raise'
+    survey = await db.scalar(
+        select(models.Survey)
+        .where(models.Survey.id == id)
+        .options(
+            selectinload(models.Survey.overlays).load_only(models.Overlay.id),
+            selectinload(models.Survey.assets).load_only(models.Asset.id),
+            selectinload(models.Survey.panos).load_only(models.Pano.id),
+            selectinload(models.Survey.photos).load_only(models.Photo.id),
+        )
+    )
+
+    # SQLAlchemy will delete the related entities because we set cascade delete at the ORM
+    # level
+    await crud.delete(db, survey)
 
 #==========================================================================================
 # Create Overlay

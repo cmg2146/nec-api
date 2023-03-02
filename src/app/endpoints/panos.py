@@ -135,7 +135,6 @@ async def delete_pano(
     db: AsyncSession = Depends(get_db)
 ) -> None:
     """Delete a pano by ID"""
-    # TODO: Need to delete all of this panos hotspots and any hotspot that links to this pano
     await crud.delete(db, models.Pano, id)
 
 
@@ -203,8 +202,8 @@ async def update_hotspot(
 
     #check if hotspot exists first
     query = select(models.Hotspot).where(
-        models.Hotspot.id == hotspot_id &
-        models.Hotspot.pano_id == id
+        (models.Hotspot.id == hotspot_id) &
+        (models.Hotspot.pano_id == id)
     )
     hotspot = await db.scalar(query)
     if not hotspot:
@@ -232,8 +231,8 @@ async def delete_hotspot(
     await crud.raise_if_not_found(db, models.Pano, id, "Pano does not exist")
 
     query = select(models.Hotspot).where(
-        models.Hotspot.id == hotspot_id &
-        models.Hotspot.pano_id == id
+        (models.Hotspot.id == hotspot_id) &
+        (models.Hotspot.pano_id == id)
     )
     hotspot = await db.scalar(query)
     if not hotspot:

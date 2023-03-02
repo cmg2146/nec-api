@@ -35,10 +35,30 @@ class Asset(BaseDbModel):
     survey_id = Column(Integer, ForeignKey("survey.id"), nullable=False, index=True)
     level = Column(Integer, default=1, nullable=False)
 
-    asset_type = relationship("AssetType", back_populates="assets", lazy="raise")
-    asset_properties = relationship("AssetProperty", back_populates="asset", lazy="raise")
-    survey = relationship("Survey", back_populates="assets", lazy="raise")
-    asset_hotspots = relationship("Hotspot", back_populates="asset", lazy="raise")
+    asset_type = relationship(
+        "AssetType",
+        back_populates="assets",
+        lazy="raise"
+    )
+    asset_properties = relationship(
+        "AssetProperty",
+        back_populates="asset",
+        cascade="save-update, merge, delete, delete-orphan",
+        passive_deletes=True,
+        lazy="raise"
+    )
+    survey = relationship(
+        "Survey",
+        back_populates="assets",
+        lazy="raise"
+    )
+    asset_hotspots = relationship(
+        "Hotspot",
+        back_populates="asset",
+        cascade="save-update, merge, delete, delete-orphan",
+        passive_deletes=True,
+        lazy="raise"
+    )
 
     __table_args__ = (
         Index('ix_asset_survey_id_level', "survey_id", "level"),
@@ -65,11 +85,16 @@ class AssetType(BaseDbModel):
     assets = relationship(
         "Asset",
         back_populates="asset_type",
+        # using default cascade - we never intend to delete an asset type when there
+        # are underlying assets
+        passive_deletes=True,
         lazy="raise"
     )
     asset_property_names = relationship(
         "AssetPropertyName",
         back_populates="asset_type",
+        cascade="save-update, merge, delete, delete-orphan",
+        passive_deletes=True,
         lazy="raise"
     )
 
@@ -85,7 +110,12 @@ class AssetProperty(BaseDbModel):
 
     name = Column(String(length=MAX_NAME_LENGTH), nullable=False)
     value = Column(String, nullable=False)
-    asset_id = Column(Integer, ForeignKey("asset.id"), nullable=False, index=True)
+    asset_id = Column(
+        Integer,
+        ForeignKey("asset.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
 
     asset = relationship("Asset", back_populates="asset_properties", lazy="raise")
 
@@ -102,6 +132,11 @@ class AssetPropertyName(BaseDbModel):
     __tablename__ = "asset_property_name"
 
     name = Column(String(length=MAX_NAME_LENGTH), nullable=False)
-    asset_type_id = Column(Integer, ForeignKey("asset_type.id"), nullable=False, index=True)
+    asset_type_id = Column(
+        Integer,
+        ForeignKey("asset_type.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
 
     asset_type = relationship("AssetType", back_populates="asset_property_names", lazy="raise")

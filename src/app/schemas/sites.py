@@ -12,8 +12,7 @@ class SiteBase(BaseModel):
     coordinates: Coordinates
     parent_site_id: int | None = Field(
         default=None,
-        description="The Id of this site's parent site."
-        # TODO: Set example to null
+        description="The Id of this site's parent site, or null if no parent."
     )
 
     # pydantic validators
