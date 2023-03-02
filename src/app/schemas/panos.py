@@ -75,20 +75,24 @@ class HotspotBase(BaseModel):
     yaw: float = Field(
         ge=-180.0,
         le=180.0,
-        description="Horizontal location of the hotspot in the photo, in degrees."
+        description="Horizontal location of the hotspot in the photo, in degrees.",
+        example=0.0
     )
     pitch: float = Field(
         ge=-90.0,
         le=90.0,
-        description="Horizontal location of the hotspot in the photo, in degrees."
+        description="Horizontal location of the hotspot in the photo, in degrees.",
+        example=0.0
     )
 
 class HotspotCreate(HotspotBase):
     asset_id: int | None = Field(
-        description="The ID of the asset this hotspot references, if applicable."
+        description="The ID of the asset this hotspot references, if applicable.",
+        example=1
     )
     destination_pano_id: int | None = Field(
-        description="The ID of the pano this hotspot links to, if applicable."
+        description="The ID of the pano this hotspot links to, if applicable.",
+        example=1
     )
 
 class HotspotUpdate(HotspotBase):

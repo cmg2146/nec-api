@@ -9,12 +9,14 @@ class Coordinates(BaseModel):
     longitude: float = Field(
         ge=-180.0,
         le=180.0,
-        description="Longitude in degrees"
+        description="Longitude in degrees",
+        example=0.0
     )
     latitude: float = Field(
         ge=-90.0,
         le=90.0,
-        description="Latitude in degrees"
+        description="Latitude in degrees",
+        example=0.0
     )
 
     def to_wkt(self) -> str:

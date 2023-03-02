@@ -12,22 +12,26 @@ class Extent(BaseModel):
     longitude_min: float = Field(
         ge=-180.0,
         le=180.0,
-        description="Mininum Longitude, in degrees, defining the boundary"
+        description="Mininum Longitude, in degrees, defining the boundary",
+        example=0.0
     )
     latitude_min: float = Field(
         ge=-90.0,
         le=90.0,
-        description="Mininum Latitude, in degrees, defining the boundary"
+        description="Mininum Latitude, in degrees, defining the boundary",
+        example=0.0
     )
     longitude_max: float = Field(
         ge=-180.0,
         le=180.0,
-        description="Maximim Longitude, in degrees, defining the boundary"
+        description="Maximim Longitude, in degrees, defining the boundary",
+        example=0.0
     )
     latitude_max: float = Field(
         ge=-90.0,
         le=90.0,
-        description="Maximum Latitude, in degrees, defining the boundary"
+        description="Maximum Latitude, in degrees, defining the boundary",
+        example=0.0
     )
 
     def to_wkt(self) -> str:

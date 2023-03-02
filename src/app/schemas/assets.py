@@ -20,11 +20,12 @@ class AssetBase(BaseModel):
     )
     coordinates: Coordinates
     asset_type_id: int = Field(
-        description="The Id of this asset's type."
+        description="The Id of this asset's type.",
+        example=1
     )
     level: int = Field(
-        default=1,
-        description="The floor level the asset is on."
+        description="The floor level the asset is on.",
+        example=1
     )
 
     # pydantic validators
