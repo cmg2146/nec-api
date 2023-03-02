@@ -7,11 +7,11 @@ database with the PostGIS extension.
 
 This app is not production ready and lacks features like:
 * Authentication
+* Proper storage for file uploads
 * API versioning
 * logging
 * auditing database changes
 * tests
-* Proper storage for user uploads
 
 ## Build
 In development, the app can be run using Linux Docker containers by executing the following command at the repo root:
@@ -61,9 +61,3 @@ The following documentation was helpful to setup this project:
 [FastAPI](https://fastapi.tiangolo.com/)
 
 [FastAPI with PostgreSQL Starter](https://github.com/tiangolo/full-stack-fastapi-postgresql)
-
-TODO:
-* add spatial queries
-* get rid of db parameter to all crud functions
-* Figure out how to use shapely types in pydantic model
-* replace filesystem for uploads with azurite

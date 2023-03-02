@@ -336,3 +336,5 @@ async def get_photos(
         query = query.where(models.Photo.level == level)
 
     return (await db.scalars(query)).all()
+
+# TODO: Add some spatial queries like finding all survey data within a user specified boundary
