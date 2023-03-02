@@ -21,7 +21,7 @@ class SurveyBase(BaseModel):
     )
 
 class Survey(SurveyBase, BaseSchemaModelInDb):
-    """Pydantic model for a Survey"""
+    """Schema model for a Survey"""
     site_id: int = Field(
         description="The Id of the site this survey is for"
     )
@@ -30,7 +30,9 @@ class Survey(SurveyBase, BaseSchemaModelInDb):
         orm_mode = True
 
 class SurveyCreate(SurveyBase):
+    """Schema model for creating a survey"""
     pass
 
 class SurveyUpdate(SurveyBase):
+    """Schema model for updating a survey"""
     pass

@@ -18,7 +18,9 @@ class PhotoBase(BaseModel):
         default=None,
         max_length=MAX_DESCRIPTION_LENGTH
     )
-    coordinates: Coordinates
+    coordinates: Coordinates = Field(
+        description="The location of the photo"
+    )
     heading: float | None = Field(
         default=None,
         ge=-180.0,
@@ -43,13 +45,15 @@ class PhotoBase(BaseModel):
     )(convert_geoalchemy_element)
 
 class PhotoCreate(PhotoBase):
+    """Schema model for creating a photo"""
     pass
 
 class PhotoUpdate(PhotoBase):
+    """Schema model for updating a photo"""
     pass
 
 class Photo(PhotoBase, BaseSchemaModelInDb):
-    """Pydantic model for a Photo"""
+    """Schema model for a Photo"""
     survey_id: int = Field(
         description="The Id of the survey this photo belongs to."
     )

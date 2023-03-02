@@ -28,7 +28,7 @@ class OverlayBase(BaseModel):
     )(convert_geoalchemy_element)
 
 class Overlay(OverlayBase, BaseSchemaModelInDb):
-    """Pydantic model for a Floor Overlay"""
+    """Schema model for an overlay"""
     survey_id: int = Field(
         description="The survey this overlay belongs to"
     )
@@ -43,7 +43,9 @@ class Overlay(OverlayBase, BaseSchemaModelInDb):
         orm_mode = True
 
 class OverlayCreate(OverlayBase):
+    """Schema model for creating an overlay"""
     pass
 
 class OverlayUpdate(OverlayBase):
+    """Schema model for updating an overlay"""
     pass

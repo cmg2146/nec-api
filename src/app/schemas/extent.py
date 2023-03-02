@@ -5,7 +5,7 @@ from shapely.geometry import box, Polygon
 from pydantic import BaseModel, Field
 
 class Extent(BaseModel):
-    """Pydantic model for a geographic extent.
+    """Schema model for a geographic extent.
 
     An extent is a rectangular bounding box in 2 dimensions.
     """

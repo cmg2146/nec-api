@@ -18,7 +18,9 @@ class PanoBase(BaseModel):
         default=None,
         max_length=MAX_DESCRIPTION_LENGTH
     )
-    coordinates: Coordinates
+    coordinates: Coordinates = Field(
+        description="The location of the pano"
+    )
     heading: float | None = Field(
         default=None,
         ge=-180.0,
@@ -43,13 +45,15 @@ class PanoBase(BaseModel):
     )(convert_geoalchemy_element)
 
 class PanoCreate(PanoBase):
+    """Schema model for creating a pano"""
     pass
 
 class PanooUpdate(PanoBase):
+    """Schema model for updating a pano"""
     pass
 
 class Pano(PanoBase, BaseSchemaModelInDb):
-    """Pydantic model for a Pano"""
+    """Schema model for a Pano"""
     survey_id: int = Field(
         description="The Id of the survey this pano belongs to."
     )
@@ -86,6 +90,7 @@ class HotspotBase(BaseModel):
     )
 
 class HotspotCreate(HotspotBase):
+    """Schema model for creating a hotspot"""
     asset_id: int | None = Field(
         description="The ID of the asset this hotspot references, if applicable.",
         example=1
@@ -96,10 +101,11 @@ class HotspotCreate(HotspotBase):
     )
 
 class HotspotUpdate(HotspotBase):
+    """Schema model for updating a hotspot"""
     pass
 
 class Hotspot(HotspotBase, BaseSchemaModelInDb):
-    """Pydantic model for a Hotspot"""
+    """Schema model for a Hotspot"""
     pano_id: int = Field(
         description="The Id of the pano this hotspot belongs to."
     )

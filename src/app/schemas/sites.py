@@ -9,7 +9,9 @@ from app.schemas.coordinates import Coordinates, convert_geoalchemy_element
 class SiteBase(BaseModel):
     """Base Pydantic model for a Site"""
     name: str = Field(max_length=MAX_NAME_LENGTH)
-    coordinates: Coordinates
+    coordinates: Coordinates = Field(
+        description="The location of the site"
+    )
     parent_site_id: int | None = Field(
         default=None,
         description="The Id of this site's parent site, or null if no parent."
@@ -23,13 +25,15 @@ class SiteBase(BaseModel):
     )(convert_geoalchemy_element)
 
 class Site(SiteBase, BaseSchemaModelInDb):
-    """Pydantic model for a Site"""
+    """Schema model for a Site"""
 
     class Config:
         orm_mode = True
 
 class SiteCreate(SiteBase):
+    """Schema model for creating a site"""
     pass
 
 class SiteUpdate(SiteBase):
+    """Schema model for updating a site"""
     pass

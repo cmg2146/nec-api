@@ -18,7 +18,9 @@ class AssetBase(BaseModel):
         default=None,
         max_length=MAX_DESCRIPTION_LENGTH
     )
-    coordinates: Coordinates
+    coordinates: Coordinates = Field(
+        description="The location of the asset"
+    )
     asset_type_id: int = Field(
         description="The Id of this asset's type.",
         example=1
@@ -36,13 +38,15 @@ class AssetBase(BaseModel):
     )(convert_geoalchemy_element)
 
 class AssetCreate(AssetBase):
+    """Schema model for creating an asset"""
     pass
 
 class AssetUpdate(AssetBase):
+    """Schema model for updating an asset"""
     pass
 
 class Asset(AssetBase, BaseSchemaModelInDb):
-    """Pydantic model for an Asset"""
+    """Schema model for an Asset"""
     survey_id: int = Field(
         description="The Id of the survey this asset belongs to."
     )
@@ -60,13 +64,15 @@ class AssetPropertyBase(BaseModel):
     value: str
 
 class AssetPropertyCreate(AssetPropertyBase):
+    """Schema model for creating an asset property"""
     pass
 
 class AssetPropertyUpdate(AssetPropertyBase):
+    """Schema model for updating an asset property"""
     pass
 
 class AssetProperty(AssetPropertyBase, BaseSchemaModelInDb):
-    """Pydantic model for an Asset Property"""
+    """Schema model for an Asset Property"""
     asset_id: int = Field(
         description="The ID of the asset this property belongs to."
     )
@@ -83,13 +89,15 @@ class AssetPropertyNameBase(BaseModel):
     name: str = Field(max_length=MAX_NAME_LENGTH)
 
 class AssetPropertyNameCreate(AssetPropertyNameBase):
+    """Schema model for creating an asset property name"""
     pass
 
 class AssetPropertyNameUpdate(AssetPropertyNameBase):
+    """Schema model for updating an asset property name"""
     pass
 
 class AssetPropertyName(AssetPropertyNameBase, BaseSchemaModelInDb):
-    """Pydantic model for an Asset Property Name"""
+    """Schema model for an Asset Property Name"""
     asset_type_id: int = Field(
         description="The ID of the asset type this property is associated with."
     )
@@ -113,13 +121,15 @@ class AssetTypeBase(BaseModel):
     )
 
 class AssetTypeCreate(AssetTypeBase):
+    """Schema model for creating an asset type"""
     pass
 
 class AssetTypeUpdate(AssetTypeBase):
+    """Schema model for updating an asset type"""
     pass
 
 class AssetType(AssetTypeBase, BaseSchemaModelInDb):
-    """Pydantic model for an Asset Type"""
+    """Schema model for an Asset Type"""
 
     # File names are not "user" configurable - there is a separate endpoint to upload the
     # actual icon file and the filenames are determined/generated automatically.

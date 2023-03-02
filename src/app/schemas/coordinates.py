@@ -5,7 +5,7 @@ from shapely.geometry import Point
 from pydantic import BaseModel, Field
 
 class Coordinates(BaseModel):
-    """Pydantic model for a geographic point"""
+    """Schema model for a geographic point"""
     longitude: float = Field(
         ge=-180.0,
         le=180.0,
