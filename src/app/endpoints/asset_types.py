@@ -43,6 +43,10 @@ async def create_asset_type(
 #==========================================================================================
 @router.get("/", response_model=list[schemas.AssetType])
 async def get_asset_types(
+    search: str | None = Query(
+        default=None,
+        description="Search Field"
+    ),
     sort_by: schemas.SortByWithName = Query(
         default=schemas.SortByWithName.NAME,
         description="The field to order results by"
@@ -50,25 +54,32 @@ async def get_asset_types(
     sort_direction: schemas.SortDirection = Query(
         default=schemas.SortDirection.ASCENDING
     ),
-    skip: int = Query(
-        default=0,
+    skip: int | None = Query(
+        default=None,
+        ge=0,
         description="Skip the specified number of items (for pagination)"
     ),
-    limit: int = Query(
-        default=100,
+    limit: int | None = Query(
+        default=None,
+        ge=1,
         description="Max number of results"
     ),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query asset types"""
-    return await crud.get_all_with_limit(
-        db,
-        models.AssetType,
-        skip,
-        limit,
-        sort_by,
-        sort_desc = sort_direction == schemas.SortDirection.DESCENDING
-    )
+    sort_desc = sort_direction == schemas.SortDirection.DESCENDING
+    query = select(models.AssetType).order_by(desc(sort_by) if sort_desc else sort_by)
+    if search:
+        query = query.where(
+            models.AssetType.name.ilike(f'%{search}%') |
+            models.AssetType.category.ilike(f'%{search}%')
+        )
+    if skip:
+        query = query.offset(skip)
+    if limit:
+        query = query.limit(limit)
+
+    return (await db.scalars(query)).all()
 
 #==========================================================================================
 # Get Asset Type

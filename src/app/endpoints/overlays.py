@@ -27,6 +27,10 @@ router = APIRouter(
 #==========================================================================================
 @router.get("/", response_model=list[schemas.Overlay])
 async def get_overlays(
+    site_id: int | None = Query(
+        default=None,
+        description="Only return overlays belonging to the specified site"
+    ),
     sort_by: schemas.SortBy = Query(
         default=schemas.SortBy.CREATED,
         description="The field to order results by"
@@ -34,25 +38,29 @@ async def get_overlays(
     sort_direction: schemas.SortDirection = Query(
         default=schemas.SortDirection.ASCENDING
     ),
-    skip: int = Query(
-        default=0,
+    skip: int | None = Query(
+        default=None,
+        ge=0,
         description="Skip the specified number of items (for pagination)"
     ),
-    limit: int = Query(
-        default=100,
+    limit: int | None = Query(
+        default=None,
+        ge=1,
         description="Max number of results"
     ),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query overlays"""
-    return await crud.get_all_with_limit(
-        db,
-        models.Overlay,
-        skip,
-        limit,
-        sort_by,
-        sort_desc = sort_direction == schemas.SortDirection.DESCENDING
-    )
+    sort_desc = sort_direction == schemas.SortDirection.DESCENDING
+    query = select(models.Overlay).order_by(desc(sort_by) if sort_desc else sort_by)
+    if site_id:
+        query = query.join(models.Survey).where(models.Survey.site_id == site_id)
+    if skip:
+        query = query.offset(skip)
+    if limit:
+        query = query.limit(limit)
+
+    return (await db.scalars(query)).all()
 
 #==========================================================================================
 # Get Overlay

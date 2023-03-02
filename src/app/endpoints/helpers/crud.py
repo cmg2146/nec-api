@@ -11,7 +11,6 @@ from app.database.models import BaseDbModel
 
 TModelType = TypeVar("TModelType", bound=BaseDbModel)
 
-# TODO: Implement something cleaner to get rid of db argument to all these functions
 async def get(
     db: AsyncSession,
     model_type: Type[TModelType],

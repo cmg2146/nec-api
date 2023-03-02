@@ -22,6 +22,18 @@ router = APIRouter(
 #==========================================================================================
 @router.get("/", response_model=list[schemas.Asset])
 async def get_assets(
+    search: str | None = Query(
+        default=None,
+        description="Search Field"
+    ),
+    site_id: int | None = Query(
+        default=None,
+        description="Only return assets belonging to the specified site"
+    ),
+    asset_type_id: int | None = Query(
+        default=None,
+        description="Only return assets with the specified type"
+    ),
     sort_by: schemas.SortByWithName = Query(
         default=schemas.SortByWithName.NAME,
         description="The field to order results by"
@@ -29,25 +41,33 @@ async def get_assets(
     sort_direction: schemas.SortDirection = Query(
         default=schemas.SortDirection.ASCENDING
     ),
-    skip: int = Query(
-        default=0,
+    skip: int | None = Query(
+        default=None,
+        ge=0,
         description="Skip the specified number of items (for pagination)"
     ),
-    limit: int = Query(
-        default=100,
+    limit: int | None = Query(
+        default=None,
+        ge=1,
         description="Max number of results"
     ),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query assets"""
-    return await crud.get_all_with_limit(
-        db,
-        models.Asset,
-        skip,
-        limit,
-        sort_by,
-        sort_desc = sort_direction == schemas.SortDirection.DESCENDING
-    )
+    sort_desc = sort_direction == schemas.SortDirection.DESCENDING
+    query = select(models.Asset).order_by(desc(sort_by) if sort_desc else sort_by)
+    if search:
+        query = query.where(models.Asset.name.ilike(f'%{search}%'))
+    if site_id:
+        query = query.join(models.Survey).where(models.Survey.site_id == site_id)
+    if asset_type_id:
+        query = query.where(models.Asset.asset_type_id == asset_type_id)
+    if skip:
+        query = query.offset(skip)
+    if limit:
+        query = query.limit(limit)
+
+    return (await db.scalars(query)).all()
 
 #==========================================================================================
 # Get Asset
