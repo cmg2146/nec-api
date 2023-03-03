@@ -1,3 +1,5 @@
+from typing import Self
+
 from geoalchemy2.elements import WKBElement, WKTElement
 from geoalchemy2.shape import to_shape
 from shapely import from_wkt
@@ -44,7 +46,7 @@ class Extent(BaseModel):
         ).wkt
 
     @classmethod
-    def from_wkt(cls, wkt: str):
+    def from_wkt(cls, wkt: str) -> Self:
         """Constructs an Extent from a WKT string"""
         shape = from_wkt(wkt)
         if isinstance(shape, Polygon):
@@ -53,7 +55,7 @@ class Extent(BaseModel):
         raise ValueError(wkt)
 
     @classmethod
-    def from_geoalchemy_element(cls, geom: WKBElement | WKTElement):
+    def from_geoalchemy_element(cls, geom: WKBElement | WKTElement) -> Self:
         """Constructs an Extent from a GeoAlchemy2 WKTElement or WKBElement"""
         shape = to_shape(geom)
         if isinstance(shape, Polygon):
@@ -62,7 +64,7 @@ class Extent(BaseModel):
         raise ValueError(geom)
 
     @classmethod
-    def from_shapely_polygon(cls, polygon: Polygon):
+    def from_shapely_polygon(cls, polygon: Polygon) -> Self:
         """Constructs an Extent from a Shapely Polygon"""
         # there are probably more efficient comparisons, but this works
         if box(*polygon.bounds).equals(polygon):

@@ -1,3 +1,5 @@
+from typing import Self
+
 from geoalchemy2.elements import WKBElement, WKTElement
 from geoalchemy2.shape import to_shape
 from shapely import from_wkt
@@ -24,7 +26,7 @@ class Coordinates(BaseModel):
         return Point(self.longitude, self.latitude).wkt
 
     @classmethod
-    def from_wkt(cls, wkt: str):
+    def from_wkt(cls, wkt: str) -> Self:
         """Constructs a Coordinates object from a WKT string"""
         shape = from_wkt(wkt)
         if isinstance(shape, Point):
@@ -33,7 +35,7 @@ class Coordinates(BaseModel):
         raise ValueError(wkt)
 
     @classmethod
-    def from_geoalchemy_element(cls, geom: WKBElement | WKTElement):
+    def from_geoalchemy_element(cls, geom: WKBElement | WKTElement) -> Self:
         """Constructs a Coordinates object from a GeoAlchemy2 WKTElement or WKBElement"""
         shape = to_shape(geom)
         if isinstance(shape, Point):
@@ -42,7 +44,7 @@ class Coordinates(BaseModel):
         raise ValueError(geom)
 
     @classmethod
-    def from_shapely_point(cls, point: Point):
+    def from_shapely_point(cls, point: Point) -> Self:
         """Constructs a Coordinates object from a Shapely Point"""
         return cls(longitude=point.x, latitude=point.y)
 
