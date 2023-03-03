@@ -160,8 +160,8 @@ async def get_overlays(
         default=None,
         description="Limit results to this floor level"
     ),
-    sort_by: schemas.SortBy = Query(
-        default=schemas.SortBy.CREATED,
+    sort_by: schemas.SortByWithName = Query(
+        default=schemas.SortByWithName.CREATED,
         description="The field to order results by"
     ),
     sort_direction: schemas.SortDirection = Query(

@@ -6,6 +6,8 @@ from geoalchemy2 import Geometry
 
 from app.database.models import BaseDbModel
 
+MAX_NAME_LENGTH = 100
+
 #==========================================================================================
 # Overlay Model
 #==========================================================================================
@@ -19,6 +21,7 @@ class Overlay(BaseDbModel):
     """
     __tablename__ = "overlay"
 
+    name = Column(String(length=MAX_NAME_LENGTH), nullable=False)
     original_filename = Column(String, nullable=True)
     stored_filename = Column(String, nullable=True)
     extent = Column(

@@ -31,8 +31,8 @@ async def get_overlays(
         default=None,
         description="Only return overlays belonging to the specified site"
     ),
-    sort_by: schemas.SortBy = Query(
-        default=schemas.SortBy.CREATED,
+    sort_by: schemas.SortByWithName = Query(
+        default=schemas.SortByWithName.CREATED,
         description="The field to order results by"
     ),
     sort_direction: schemas.SortDirection = Query(
