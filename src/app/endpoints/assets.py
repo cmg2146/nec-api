@@ -34,38 +34,24 @@ async def get_assets(
         default=None,
         description="Only return assets with the specified type"
     ),
-    sort_by: schemas.SortByWithName = Query(
-        default=schemas.SortByWithName.NAME,
-        description="The field to order results by"
-    ),
-    sort_direction: schemas.SortDirection = Query(
-        default=schemas.SortDirection.ASCENDING
-    ),
-    skip: int | None = Query(
-        default=None,
-        ge=0,
-        description="Skip the specified number of items (for pagination)"
-    ),
-    limit: int | None = Query(
-        default=None,
-        ge=1,
-        description="Max number of results"
-    ),
+    c_params: schemas.CommonQueryParams = Depends(schemas.CommonQueryParams),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query assets"""
-    sort_desc = sort_direction == schemas.SortDirection.DESCENDING
-    query = select(models.Asset).order_by(desc(sort_by) if sort_desc else sort_by)
+    query = (
+        select(models.Asset)
+        .order_by(desc(c_params.sort_by) if c_params.sort_desc else c_params.sort_by)
+    )
     if search:
         query = query.where(models.Asset.name.icontains(search, autoescape=True))
     if site_id:
         query = query.join(models.Survey).where(models.Survey.site_id == site_id)
     if asset_type_id:
         query = query.where(models.Asset.asset_type_id == asset_type_id)
-    if skip:
-        query = query.offset(skip)
-    if limit:
-        query = query.limit(limit)
+    if c_params.skip:
+        query = query.offset(c_params.skip)
+    if c_params.limit:
+        query = query.limit(c_params.limit)
 
     return (await db.scalars(query)).all()
 
@@ -138,24 +124,21 @@ async def create_property(
 @router.get("/{id}/properties", response_model=list[schemas.AssetProperty])
 async def get_properties(
     id: int = Path(description="The asset ID"),
-    sort_by: schemas.SortByWithName = Query(
-        default=schemas.SortByWithName.NAME,
-        description="The field to order results by"
-    ),
-    sort_direction: schemas.SortDirection = Query(
-        default=schemas.SortDirection.ASCENDING
-    ),
+    c_params: schemas.CommonQueryParams = Depends(schemas.CommonQueryParams),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Get asset's properties"""
     await crud.raise_if_not_found(db, models.Asset, id, "Asset does not exist")
 
-    sort_desc = sort_direction == schemas.SortDirection.DESCENDING
     query = (
         select(models.AssetProperty)
         .where(models.AssetProperty.asset_id == id)
-        .order_by(desc(sort_by) if sort_desc else sort_by)
+        .order_by(desc(c_params.sort_by) if c_params.sort_desc else c_params.sort_by)
     )
+    if c_params.skip:
+        query = query.offset(c_params.skip)
+    if c_params.limit:
+        query = query.limit(c_params.limit)
 
     return (await db.scalars(query)).all()
 

@@ -1,4 +1,4 @@
-from .sorting import SortBy, SortByWithName, SortDirection
+from .common_params import SortBy, CommonQueryParams
 from .coordinates import Coordinates
 from .extent import Extent
 from .sites import Site, SiteCreate, SiteUpdate

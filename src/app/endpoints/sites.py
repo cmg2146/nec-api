@@ -55,34 +55,20 @@ async def get_sites(
         default=None,
         description="Search Field"
     ),
-    sort_by: schemas.SortByWithName = Query(
-        default=schemas.SortByWithName.NAME,
-        description="The field to order results by"
-    ),
-    sort_direction: schemas.SortDirection = Query(
-        default=schemas.SortDirection.ASCENDING
-    ),
-    skip: int | None = Query(
-        default=None,
-        ge=0,
-        description="Skip the specified number of items (for pagination)"
-    ),
-    limit: int | None = Query(
-        default=None,
-        ge=1,
-        description="Max number of results"
-    ),
+    c_params: schemas.CommonQueryParams = Depends(schemas.CommonQueryParams),
     db: AsyncSession = Depends(get_db)
 ) -> StreamingResponse:
     """Query sites"""
-    sort_desc = sort_direction == schemas.SortDirection.DESCENDING
-    query = select(models.Site).order_by(desc(sort_by) if sort_desc else sort_by)
+    query = (
+        select(models.Site)
+        .order_by(desc(c_params.sort_by) if c_params.sort_desc else c_params.sort_by)
+    )
     if search:
         query = query.where(models.Site.name.icontains(search, autoescape=True))
-    if skip:
-        query = query.offset(skip)
-    if limit:
-        query = query.limit(limit)
+    if c_params.skip:
+        query = query.offset(c_params.skip)
+    if c_params.limit:
+        query = query.limit(c_params.limit)
 
     return (await db.scalars(query)).all()
 
@@ -103,24 +89,21 @@ async def get_site(
 @router.get("/{id}/sub-sites", response_model=list[schemas.Site])
 async def get_sub_sites(
     id: int = Path(description="The ID of the site to get sub sites for"),
-    sort_by: schemas.SortByWithName = Query(
-        default=schemas.SortByWithName.NAME,
-        description="The field to order results by"
-    ),
-    sort_direction: schemas.SortDirection = Query(
-        default=schemas.SortDirection.ASCENDING
-    ),
+    c_params: schemas.CommonQueryParams = Depends(schemas.CommonQueryParams),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query sub sites"""
     await crud.raise_if_not_found(db, models.Site, id, "Site does not exist")
 
-    sort_desc = sort_direction == schemas.SortDirection.DESCENDING
     query = (
         select(models.Site)
         .where(models.Site.parent_site_id == id)
-        .order_by(desc(sort_by) if sort_desc else sort_by)
+        .order_by(desc(c_params.sort_by) if c_params.sort_desc else c_params.sort_by)
     )
+    if c_params.skip:
+        query = query.offset(c_params.skip)
+    if c_params.limit:
+        query = query.limit(c_params.limit)
 
     return (await db.scalars(query)).all()
 
@@ -200,23 +183,20 @@ async def create_survey(
 @router.get("/{id}/surveys", tags=["Surveys"], response_model=list[schemas.Survey])
 async def get_surveys(
     id: int = Path(description="The ID of the site to get surveys for"),
-    sort_by: schemas.SortByWithName = Query(
-        default=schemas.SortByWithName.NAME,
-        description="The field to order results by"
-    ),
-    sort_direction: schemas.SortDirection = Query(
-        default=schemas.SortDirection.ASCENDING
-    ),
+    c_params: schemas.CommonQueryParams = Depends(schemas.CommonQueryParams),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query a site's surveys"""
     await crud.raise_if_not_found(db, models.Site, id, "Site does not exist")
 
-    sort_desc = sort_direction == schemas.SortDirection.DESCENDING
     query = (
         select(models.Survey)
         .where(models.Survey.site_id == id)
-        .order_by(desc(sort_by) if sort_desc else sort_by)
+        .order_by(desc(c_params.sort_by) if c_params.sort_desc else c_params.sort_by)
     )
+    if c_params.skip:
+        query = query.offset(c_params.skip)
+    if c_params.limit:
+        query = query.limit(c_params.limit)
 
     return (await db.scalars(query)).all()

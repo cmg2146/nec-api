@@ -31,36 +31,22 @@ async def get_surveys(
         default=None,
         description="Only return surveys belonging to the specified site"
     ),
-    sort_by: schemas.SortByWithName = Query(
-        default=schemas.SortByWithName.NAME,
-        description="The field to order results by"
-    ),
-    sort_direction: schemas.SortDirection = Query(
-        default=schemas.SortDirection.ASCENDING
-    ),
-    skip: int | None = Query(
-        default=None,
-        ge=0,
-        description="Skip the specified number of items (for pagination)"
-    ),
-    limit: int | None = Query(
-        default=None,
-        ge=1,
-        description="Max number of results"
-    ),
+    c_params: schemas.CommonQueryParams = Depends(schemas.CommonQueryParams),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query surveys"""
-    sort_desc = sort_direction == schemas.SortDirection.DESCENDING
-    query = select(models.Survey).order_by(desc(sort_by) if sort_desc else sort_by)
+    query = (
+        select(models.Survey)
+        .order_by(desc(c_params.sort_by) if c_params.sort_desc else c_params.sort_by)
+    )
     if search:
         query = query.where(models.Survey.name.icontains(search, autoescape=True))
     if site_id:
         query = query.where(models.Survey.site_id == site_id)
-    if skip:
-        query = query.offset(skip)
-    if limit:
-        query = query.limit(limit)
+    if c_params.skip:
+        query = query.offset(c_params.skip)
+    if c_params.limit:
+        query = query.limit(c_params.limit)
 
     return (await db.scalars(query)).all()
 
@@ -160,40 +146,23 @@ async def get_overlays(
         default=None,
         description="Limit results to this floor level"
     ),
-    sort_by: schemas.SortByWithName = Query(
-        default=schemas.SortByWithName.CREATED,
-        description="The field to order results by"
-    ),
-    sort_direction: schemas.SortDirection = Query(
-        default=schemas.SortDirection.ASCENDING
-    ),
-    skip: int | None = Query(
-        default=None,
-        ge=0,
-        description="Skip the specified number of items (for pagination)"
-    ),
-    limit: int | None = Query(
-        default=None,
-        ge=1,
-        description="Max number of results"
-    ),
+    c_params: schemas.CommonQueryParams = Depends(schemas.CommonQueryParams),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query a survey's overlays"""
     await crud.raise_if_not_found(db, models.Survey, id, "Survey does not exist")
 
-    sort_desc = sort_direction == schemas.SortDirection.DESCENDING
     query = (
         select(models.Overlay)
         .where(models.Overlay.survey_id == id)
-        .order_by(desc(sort_by) if sort_desc else sort_by)
+        .order_by(desc(c_params.sort_by) if c_params.sort_desc else c_params.sort_by)
     )
     if level is not None:
         query = query.where(models.Overlay.level == level)
-    if skip:
-        query = query.offset(skip)
-    if limit:
-        query = query.limit(limit)
+    if c_params.skip:
+        query = query.offset(c_params.skip)
+    if c_params.limit:
+        query = query.limit(c_params.limit)
 
     return (await db.scalars(query)).all()
 
@@ -239,33 +208,16 @@ async def get_assets(
         default=None,
         description="Only return assets with the specified type"
     ),
-    sort_by: schemas.SortByWithName = Query(
-        default=schemas.SortByWithName.NAME,
-        description="The field to order results by"
-    ),
-    sort_direction: schemas.SortDirection = Query(
-        default=schemas.SortDirection.ASCENDING
-    ),
-    skip: int | None = Query(
-        default=None,
-        ge=0,
-        description="Skip the specified number of items (for pagination)"
-    ),
-    limit: int | None = Query(
-        default=None,
-        ge=1,
-        description="Max number of results"
-    ),
+    c_params: schemas.CommonQueryParams = Depends(schemas.CommonQueryParams),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query a survey's assets"""
     await crud.raise_if_not_found(db, models.Survey, id, "Survey does not exist")
 
-    sort_desc = sort_direction == schemas.SortDirection.DESCENDING
     query = (
         select(models.Asset)
         .where(models.Asset.survey_id == id)
-        .order_by(desc(sort_by) if sort_desc else sort_by)
+        .order_by(desc(c_params.sort_by) if c_params.sort_desc else c_params.sort_by)
     )
     if search:
         query = query.where(models.Asset.name.icontains(search, autoescape=True))
@@ -273,10 +225,10 @@ async def get_assets(
         query = query.where(models.Asset.level == level)
     if asset_type_id:
         query = query.where(models.Asset.asset_type_id == asset_type_id)
-    if skip:
-        query = query.offset(skip)
-    if limit:
-        query = query.limit(limit)
+    if c_params.skip:
+        query = query.offset(c_params.skip)
+    if c_params.limit:
+        query = query.limit(c_params.limit)
 
     return (await db.scalars(query)).all()
 
@@ -322,42 +274,25 @@ async def get_panos(
         default=None,
         description="Limit results to this floor level"
     ),
-    sort_by: schemas.SortByWithName = Query(
-        default=schemas.SortByWithName.NAME,
-        description="The field to order results by"
-    ),
-    sort_direction: schemas.SortDirection = Query(
-        default=schemas.SortDirection.ASCENDING
-    ),
-    skip: int | None = Query(
-        default=None,
-        ge=0,
-        description="Skip the specified number of items (for pagination)"
-    ),
-    limit: int | None = Query(
-        default=None,
-        ge=1,
-        description="Max number of results"
-    ),
+    c_params: schemas.CommonQueryParams = Depends(schemas.CommonQueryParams),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query a survey's panos"""
     await crud.raise_if_not_found(db, models.Survey, id, "Survey does not exist")
 
-    sort_desc = sort_direction == schemas.SortDirection.DESCENDING
     query = (
         select(models.Pano)
         .where(models.Pano.survey_id == id)
-        .order_by(desc(sort_by) if sort_desc else sort_by)
+        .order_by(desc(c_params.sort_by) if c_params.sort_desc else c_params.sort_by)
     )
     if search:
         query = query.where(models.Pano.name.icontains(search, autoescape=True))
     if level is not None:
         query = query.where(models.Pano.level == level)
-    if skip:
-        query = query.offset(skip)
-    if limit:
-        query = query.limit(limit)
+    if c_params.skip:
+        query = query.offset(c_params.skip)
+    if c_params.limit:
+        query = query.limit(c_params.limit)
 
     return (await db.scalars(query)).all()
 
@@ -404,42 +339,25 @@ async def get_photos(
         default=None,
         description="Limit results to this floor level"
     ),
-    sort_by: schemas.SortByWithName = Query(
-        default=schemas.SortByWithName.NAME,
-        description="The field to order results by"
-    ),
-    sort_direction: schemas.SortDirection = Query(
-        default=schemas.SortDirection.ASCENDING
-    ),
-    skip: int | None = Query(
-        default=None,
-        ge=0,
-        description="Skip the specified number of items (for pagination)"
-    ),
-    limit: int | None = Query(
-        default=None,
-        ge=1,
-        description="Max number of results"
-    ),
+    c_params: schemas.CommonQueryParams = Depends(schemas.CommonQueryParams),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query a survey's photos"""
     await crud.raise_if_not_found(db, models.Survey, id, "Survey does not exist")
 
-    sort_desc = sort_direction == schemas.SortDirection.DESCENDING
     query = (
         select(models.Photo)
         .where(models.Photo.survey_id == id)
-        .order_by(desc(sort_by) if sort_desc else sort_by)
+        .order_by(desc(c_params.sort_by) if c_params.sort_desc else c_params.sort_by)
     )
     if search:
         query = query.where(models.Photo.name.icontains(search, autoescape=True))
     if level is not None:
         query = query.where(models.Photo.level == level)
-    if skip:
-        query = query.offset(skip)
-    if limit:
-        query = query.limit(limit)
+    if c_params.skip:
+        query = query.offset(c_params.skip)
+    if c_params.limit:
+        query = query.limit(c_params.limit)
 
     return (await db.scalars(query)).all()
 

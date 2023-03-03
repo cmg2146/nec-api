@@ -35,36 +35,22 @@ async def get_photos(
         default=None,
         description="Only return photos belonging to the specified site"
     ),
-    sort_by: schemas.SortByWithName = Query(
-        default=schemas.SortByWithName.NAME,
-        description="The field to order results by"
-    ),
-    sort_direction: schemas.SortDirection = Query(
-        default=schemas.SortDirection.ASCENDING
-    ),
-    skip: int | None = Query(
-        default=None,
-        ge=0,
-        description="Skip the specified number of items (for pagination)"
-    ),
-    limit: int | None = Query(
-        default=None,
-        ge=1,
-        description="Max number of results"
-    ),
+    c_params: schemas.CommonQueryParams = Depends(schemas.CommonQueryParams),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query photos"""
-    sort_desc = sort_direction == schemas.SortDirection.DESCENDING
-    query = select(models.Photo).order_by(desc(sort_by) if sort_desc else sort_by)
+    query = (
+        select(models.Photo)
+        .order_by(desc(c_params.sort_by) if c_params.sort_desc else c_params.sort_by)
+    )
     if search:
         query = query.where(models.Photo.name.icontains(search, autoescape=True))
     if site_id:
         query = query.join(models.Survey).where(models.Survey.site_id == site_id)
-    if skip:
-        query = query.offset(skip)
-    if limit:
-        query = query.limit(limit)
+    if c_params.skip:
+        query = query.offset(c_params.skip)
+    if c_params.limit:
+        query = query.limit(c_params.limit)
 
     return (await db.scalars(query)).all()
 

@@ -35,36 +35,22 @@ async def get_panos(
         default=None,
         description="Only return panos belonging to the specified site"
     ),
-    sort_by: schemas.SortByWithName = Query(
-        default=schemas.SortByWithName.NAME,
-        description="The field to order results by"
-    ),
-    sort_direction: schemas.SortDirection = Query(
-        default=schemas.SortDirection.ASCENDING
-    ),
-    skip: int | None = Query(
-        default=None,
-        ge=0,
-        description="Skip the specified number of items (for pagination)"
-    ),
-    limit: int | None = Query(
-        default=None,
-        ge=1,
-        description="Max number of results"
-    ),
+    c_params: schemas.CommonQueryParams = Depends(schemas.CommonQueryParams),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query panos"""
-    sort_desc = sort_direction == schemas.SortDirection.DESCENDING
-    query = select(models.Pano).order_by(desc(sort_by) if sort_desc else sort_by)
+    query = (
+        select(models.Pano)
+        .order_by(desc(c_params.sort_by) if c_params.sort_desc else c_params.sort_by)
+    )
     if search:
         query = query.where(models.Pano.name.icontains(search, autoescape=True))
     if site_id:
         query = query.join(models.Survey).where(models.Survey.site_id == site_id)
-    if skip:
-        query = query.offset(skip)
-    if limit:
-        query = query.limit(limit)
+    if c_params.skip:
+        query = query.offset(c_params.skip)
+    if c_params.limit:
+        query = query.limit(c_params.limit)
 
     return (await db.scalars(query)).all()
 
@@ -180,24 +166,25 @@ async def create_hotspot(
 @router.get("/{id}/hotspots/", response_model=list[schemas.Hotspot])
 async def get_hotspots(
     id: int = Path(description="The ID of the pano to get hotspots for"),
-    sort_by: schemas.SortBy = Query(
-        default=schemas.SortBy.CREATED,
-        description="The field to order results by"
-    ),
-    sort_direction: schemas.SortDirection = Query(
-        default=schemas.SortDirection.ASCENDING
-    ),
+    c_params: schemas.CommonQueryParams = Depends(schemas.CommonQueryParams),
     db: AsyncSession = Depends(get_db)
 ) -> any:
     """Query a pano's hotspots"""
     await crud.raise_if_not_found(db, models.Pano, id, "Pano does not exist")
 
-    sort_desc = sort_direction == schemas.SortDirection.DESCENDING
-    query = (
-        select(models.Hotspot)
-        .where(models.Hotspot.pano_id == id)
-        .order_by(desc(sort_by) if sort_desc else sort_by)
-    )
+    query = select(models.Hotspot).where(models.Hotspot.pano_id == id)
+
+    # hotspots dont support name yet. TODO: populate name from asset or pano.
+    if c_params.sort_by == schemas.SortBy.NAME:
+        sort_by_param = schemas.SortBy.ID
+    else:
+        sort_by_param = c_params.sort_by
+
+    query = query.order_by(desc(sort_by_param) if c_params.sort_desc else sort_by_param)
+    if c_params.skip:
+        query = query.offset(c_params.skip)
+    if c_params.limit:
+        query = query.limit(c_params.limit)
 
     return (await db.scalars(query)).all()
 
