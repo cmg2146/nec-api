@@ -24,3 +24,8 @@ app.include_router(overlays.router)
 app.include_router(panos.router)
 app.include_router(assets.router)
 app.include_router(photos.router)
+
+# add a simple healthcheck endpoint
+@app.head('/healthcheck/')
+def get_healthcheck():
+    pass

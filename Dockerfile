@@ -22,6 +22,10 @@ WORKDIR /app
 COPY --from=install-deps /app ./
 COPY ./src ./src
 
+RUN apt-get -y update && apt-get -y install wget
+HEALTHCHECK --interval=1m --timeout=5s \
+  CMD wget --no-verbose --tries=1 --spider http://localhost/healthcheck/ || exit 1
+
 WORKDIR /app/src
 ENTRYPOINT ["uvicorn", "app.main:app"]
 CMD ["--host", "0.0.0.0", "--port", "80"]
