@@ -3,7 +3,7 @@ import uuid
 import mimetypes
 
 import aiofiles
-import aiofiles.os as aioos
+
 from fastapi import UploadFile, HTTPException, status
 from pydantic import BaseModel, ByteSize
 
@@ -87,8 +87,8 @@ async def store_uploaded_file(
     file_path = os.path.join(directory, file_name)
 
     num_bytes_read = 0
-    try:
-        async with aiofiles.open(file_path, 'wb') as dest:
+    async with aiofiles.open(file_path, 'wb') as dest:
+        try:
             while chunk := await file.read(UPLOAD_CHUNK_SIZE):
                 num_bytes_read += len(chunk)
                 if max_size_bytes and num_bytes_read > max_size_bytes:
@@ -98,8 +98,8 @@ async def store_uploaded_file(
                     )
 
                 await dest.write(chunk)
-    except HTTPException:
-        await aioos.unlink(file_path)
-        raise
+        except:
+            await aiofiles.os.unlink(file_path)
+            raise
 
     return file_path
