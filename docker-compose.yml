@@ -5,7 +5,7 @@ services:
   api:
     build:
       context: .
-      target: install-deps
+      target: development
     entrypoint: ["/wait-for-it.sh", "database:5432", "-t", "30", "--", "/start-api.sh"]
     command: ["--host", "0.0.0.0", "--port", "80"]
     ports:

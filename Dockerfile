@@ -1,9 +1,21 @@
-FROM python:3.11-slim as install-deps
+FROM python:3.11-slim as base
 
-# install dependencies
+ARG POETRY_VERSION=1.5.1
+
+# install production dependencies
 WORKDIR /app
-COPY ./requirements.txt ./
-RUN pip install --no-cache-dir --upgrade -r ./requirements.txt
+COPY ./pyproject.toml ./poetry.lock* ./
+ENV POETRY_VIRTUALENVS_CREATE=false
+# TODO: subsequent stages do not need poetry installed - potential performance improvement
+RUN pip install poetry==$POETRY_VERSION && poetry install --no-dev --no-root --no-directory
+
+
+FROM base as development
+
+ENV FASTAPI_ENV=development
+
+# install dev dependencies, production dependencies are already installed in base stage
+RUN poetry install --no-root --no-directory
 
 # The docker compose file is dependent on the correct working directory to
 # properly start uvicorn, so set it here.
@@ -13,14 +25,11 @@ WORKDIR /app/src
 # specifies the entrypoint and command. In production, we fall through to next stage.
 
 
-FROM python:3.11-slim
+FROM base as production
 
 ENV FASTAPI_ENV=production
 
-# copy dependencies installed in previous stage and then copy source code
-WORKDIR /app
-COPY --from=install-deps /app ./
-COPY ./src ./src
+COPY ./src /app/src
 
 RUN apt-get -y update && apt-get -y install wget
 HEALTHCHECK --interval=1m --timeout=5s \

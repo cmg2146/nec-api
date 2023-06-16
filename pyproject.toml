@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "nec-api"
+version = "1.0.0"
+description = "Generic Geospatial Data Collector"
+authors = ["Clark Granum <120140190+cmg2146@users.noreply.github.com>"]
+license = "unlicense"
+readme = "README.md"
+packages = [{include = "app", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = { version = "^0.89.1", extras = ["all"] }
+sqlalchemy = { version = "^2.0.3", extras = ["asyncio"] }
+asyncpg = "^0.27.0"
+GeoAlchemy2 = "^0.13.1"
+shapely = "^2.0.1"
+alembic = "^1.9.4"
+aiofiles = "^23.1.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
